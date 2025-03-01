@@ -105,8 +105,6 @@ class _InstructionsState extends State<Instructions> {
               maxLength: 500,
             ),
             const SizedBox(height: 20),
-
-            // Button to add instruction
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton.icon(
@@ -116,9 +114,8 @@ class _InstructionsState extends State<Instructions> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Display list of instructions
             ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: instructions.length,
               itemBuilder: (context, index) {
@@ -149,8 +146,6 @@ class _InstructionsState extends State<Instructions> {
               },
             ),
             const SizedBox(height: 300),
-
-            // Save button
             ElevatedButton(
   style: ElevatedButton.styleFrom(
     backgroundColor: const Color.fromRGBO(255, 213, 85, 1),

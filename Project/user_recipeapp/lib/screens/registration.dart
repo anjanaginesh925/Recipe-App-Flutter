@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:user_recipeapp/components/form_validation.dart';
 import 'package:user_recipeapp/main.dart';
 import 'package:user_recipeapp/screens/login.dart';
@@ -24,7 +23,7 @@ class _RegistrationState extends State<Registration> {
   final TextEditingController _confirmpasswordController =
       TextEditingController();
   final formkey = GlobalKey<FormState>();
-File? _image;
+  File? _image;
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage() async {
@@ -36,18 +35,15 @@ File? _image;
     }
   }
 
-  Future<String?> _uploadImage() async {
+  Future<String?> _uploadImage(String uid) async {
     try {
-      // Get current date and time
-      String formattedDate =
-          DateFormat('dd-MM-yyyy-HH-mm').format(DateTime.now());
 
       // Extract file extension from _image!
       String fileExtension =
           path.extension(_image!.path); // Example: .jpg, .png
 
       // Generate filename with extension
-      String fileName = 'Recipe-$formattedDate$fileExtension';
+      String fileName = 'User-$uid$fileExtension';
 
       await supabase.storage.from('reciepes').upload(fileName, _image!);
 
@@ -77,14 +73,14 @@ File? _image;
       String email = _emailController.text;
       String contact = _contactController.text;
       String password = _passwordController.text;
-
+      String? url = await _uploadImage(uid); 
       await supabase.from('tbl_user').insert({
         'user_id': uid,
         'user_name': name,
         'user_email': email,
         'user_contact': contact,
         'user_password': password,
-
+        'user_photo': url,
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(

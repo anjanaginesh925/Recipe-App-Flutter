@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:user_recipeapp/screens/followers.dart';
 import 'package:user_recipeapp/screens/login.dart';
-import 'package:user_recipeapp/screens/registration.dart';
 
 Future<void> main() async {
 await Supabase.initialize(
@@ -20,6 +20,7 @@ class MainApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Login(),
-    );
+      
+   );
   }
 }

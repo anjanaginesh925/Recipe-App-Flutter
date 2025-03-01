@@ -137,7 +137,6 @@ class _IngredientsState extends State<Ingredients> {
 
   @override
   Widget build(BuildContext context) {
-    print("Recieved ID: ${widget.recipieId}");
     return Scaffold(
       appBar: AppBar(
         title: const Text(

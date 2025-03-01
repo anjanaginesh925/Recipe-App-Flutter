@@ -1,7 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:user_recipeapp/main.dart';
+import 'package:user_recipeapp/screens/editprofile.dart';
+import 'package:user_recipeapp/screens/viewrecipe.dart';
 
-class Profile extends StatelessWidget {
+class Profile extends StatefulWidget {
   const Profile({super.key});
+
+  @override
+  State<Profile> createState() => _ProfileState();
+}
+
+class _ProfileState extends State<Profile> {
+  List<Map<String, dynamic>> userList = [];
+  List<Map<String, dynamic>> recipeList = [];
+  String name = '';
+  String image = '';
+
+  Future<void> fetchUser() async {
+    try {
+      final response = await supabase
+          .from('tbl_user')
+          .select()
+          .eq('user_id', supabase.auth.currentUser!.id)
+          .single();
+      setState(() {
+        name = response['user_name']?.toString() ?? 'Unknown User';
+        image = response['user_photo']?.toString() ?? '';
+      });
+    } catch (e) {
+      print("Error fetching user: $e");
+    }
+  }
+
+  Future<void> fetchRecipe() async {
+    try {
+      final response = await supabase
+          .from("tbl_recipe")
+          .select()
+          .eq('user_id', supabase.auth.currentUser!.id);
+      setState(() {
+        recipeList = response;
+      });
+    } catch (e) {
+      print("Error fetching recipe: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRecipe();
+    fetchUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,17 +60,20 @@ class Profile extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Profile Picture
-        const CircleAvatar(
+        CircleAvatar(
           radius: 50,
           backgroundColor: Colors.grey,
-          child: Icon(Icons.person, size: 50, color: Colors.white),
+          backgroundImage: NetworkImage(image),
+          child: image == ""
+              ? Icon(Icons.person, size: 50, color: Colors.white)
+              : null,
         ),
 
         const SizedBox(height: 10),
 
         // User Name
-        const Text(
-          'Your Name',
+        Text(
+          name,
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
 
@@ -28,7 +81,14 @@ class Profile extends StatelessWidget {
 
         // Edit Profile Button
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditProfile()
+                    ),
+                  );
+          },
           child: const Text('Edit Profile'),
         ),
 
@@ -39,8 +99,8 @@ class Profile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Column(
-              children: const [
-                Text('10',
+              children: [
+                Text(recipeList.length.toString(),
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Text('Posts'),
@@ -77,75 +137,133 @@ class Profile extends StatelessWidget {
 
         // Grid for Posts
         GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(5),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            childAspectRatio: 0.75,
             crossAxisCount: 2,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
           ),
-          itemCount: 6, // Example posts
+          itemCount: recipeList.length,
           itemBuilder: (context, index) {
-            return Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(10), 
-              ),
-              child: Column(
-                children: [
-                  Stack(
+            final data = recipeList[index];
+
+            return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ViewRecipe(recipeId: data['id']),
+                    ),
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 255, 255, 255),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
                     children: [
-                      const Align(
-                        alignment: Alignment.topRight,
+                      Stack(
+                        children: [
+                          // Recipe Image
+                          SizedBox(
+                            height: 195,
+                            width: double.infinity,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                data['recipe_photo']?.toString() ?? '',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+
+                          // Three-dot menu (Top-Right)
+                          const Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Icon(Icons.more_vert,
+                                color: Color.fromARGB(255, 0, 0, 0)),
+                          ),
+
+                          // Cooking Time (Bottom-Left)
+                          Positioned(
+                            bottom: 8,
+                            left: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black
+                                    .withOpacity(0.6), // Semi-transparent black
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.access_time,
+                                      color: Colors.white, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    data['recipe_cookingtime']?.toString() ??
+                                        'N/A',
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Small section at the bottom for rating
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(
+                              255, 255, 255, 255), // Light background color
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: const [
+                                Icon(Icons.star, color: Colors.amber, size: 18),
+                                SizedBox(width: 4),
+                                Text("4.5",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: double.infinity,
                         child: Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Icon(Icons.favorite_border),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            data['recipe_name']?.toString() ?? 'Unknown Recipe',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.left,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(
-                    height: 70,
-                  ),
-                  Divider(
-                    thickness: 2,
-                  ),
-                  // Small section at the bottom for rating and time
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    // margin: const EdgeInsets.only(top: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200], // Light background color
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.amber, size: 18),
-                            SizedBox(width: 4),
-                            Text("4.5",
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(Icons.access_time,
-                                color: Colors.grey, size: 18),
-                            SizedBox(width: 4),
-                            Text("30 min",
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
+                ));
           },
         ),
       ],
