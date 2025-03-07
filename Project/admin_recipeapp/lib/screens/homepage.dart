@@ -2,6 +2,7 @@ import 'package:admin_recipeapp/screens/account.dart';
 import 'package:admin_recipeapp/screens/category.dart';
 import 'package:admin_recipeapp/screens/cuisine.dart';
 import 'package:admin_recipeapp/screens/dashboard.dart';
+import 'package:admin_recipeapp/screens/diet.dart';
 import 'package:admin_recipeapp/screens/ingredient.dart';
 import 'package:admin_recipeapp/screens/level.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class _HomepageState extends State<Homepage> {
     'Level',
     'Ingredient',
     'Cuisine',
+    'Diet',
   ];
 
   final List<IconData> pageIcons = [
@@ -32,6 +34,7 @@ class _HomepageState extends State<Homepage> {
     Icons.star,
     Icons.soup_kitchen,
     Icons.restaurant,
+    Icons.restaurant_menu,
   ];
 
   final List<Widget> pageContent = [
@@ -41,6 +44,7 @@ class _HomepageState extends State<Homepage> {
     LevelPage(),
     Ingredient(),
     Cuisine(),
+    Diet()
   ];
 
   @override

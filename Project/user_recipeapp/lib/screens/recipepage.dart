@@ -110,15 +110,37 @@ class _RecipePageState extends State<RecipePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Recipe Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                recipe?['recipe_photo'] ?? '',
-                width: double.infinity,
-                height: 300,
-                fit: BoxFit.cover,
-              ),
-            ),
+            // Recipe Image with Heart Icon
+Stack(
+  children: [
+    ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Image.network(
+        recipe?['recipe_photo'] ?? '',
+        width: double.infinity,
+        height: 300,
+        fit: BoxFit.cover,
+      ),
+    ),
+    Positioned(
+      top: 10,
+      right: 10,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.black.withOpacity(0.5), // Semi-transparent black background
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.favorite, color: Colors.white),
+          onPressed: () {
+            // Handle favorite action (e.g., toggle favorite state)
+          },
+        ),
+      ),
+    ),
+  ],
+),
+
             const SizedBox(height: 10),
 
             // Recipe Name & Username (Clickable)

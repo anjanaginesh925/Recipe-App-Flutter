@@ -1,66 +1,66 @@
 import 'package:admin_recipeapp/main.dart';
 import 'package:flutter/material.dart';
 
-class Cuisine extends StatefulWidget {
-  const Cuisine({super.key});
+class Diet extends StatefulWidget {
+  const Diet({super.key});
 
   @override
-  State<Cuisine> createState() => _CuisineState();
+  State<Diet> createState() => _DietState();
 }
 
-class _CuisineState extends State<Cuisine> {
-  List<Map<String, dynamic>> cuisineList = [];
+class _DietState extends State<Diet> {
+  List<Map<String, dynamic>> dietList = [];
   final TextEditingController _nameController = TextEditingController();
   int editID = 0;
   final formKey = GlobalKey<FormState>();
 
-  Future<void> insertCuisine() async {
+  Future<void> insertDiet() async {
     try {
       String name = _nameController.text.trim();
-      await supabase.from('tbl_cuisine').insert({'cuisine_name': name});
-      showSnackbar("Cuisine Added Successfully!", Colors.green);
+      await supabase.from('tbl_diet').insert({'diet_name': name});
+      showSnackbar("Diet Added Successfully!", Colors.green);
       _nameController.clear();
       fetchCuisine();
     } catch (e) {
-      showSnackbar("Failed to add cuisine. Try again!", Colors.red);
+      showSnackbar("Failed to add Diet. Try again!", Colors.red);
       print("ERROR ADDING CUISINE: $e");
     }
   }
 
   Future<void> fetchCuisine() async {
     try {
-      final response = await supabase.from('tbl_cuisine').select();
+      final response = await supabase.from('tbl_diet').select();
       setState(() {
-        cuisineList = response;
+        dietList = response;
       });
     } catch (e) {
-      print("ERROR FETCHING CUISINES: $e");
+      print("ERROR FETCHING Diet: $e");
     }
   }
 
-  Future<void> deleteCuisine(String id) async {
+  Future<void> deleteDiet(String id) async {
     try {
-      await supabase.from("tbl_cuisine").delete().eq("id", id);
-      showSnackbar("Cuisine Deleted", Colors.redAccent);
+      await supabase.from("tbl_diet").delete().eq("id", id);
+      showSnackbar("Diet Deleted", Colors.redAccent);
       fetchCuisine();
     } catch (e) {
-      print("ERROR DELETING CUISINE: $e");
+      print("ERROR DELETING Diet $e");
     }
   }
 
-  Future<void> editCuisine() async {
+  Future<void> editDiet() async {
     try {
-      await supabase.from('tbl_cuisine').update(
-        {'cuisine_name': _nameController.text.trim()},
+      await supabase.from('tbl_diet').update(
+        {'diet_name': _nameController.text.trim()},
       ).eq("id", editID);
-      showSnackbar("Cuisine Updated Successfully!", Colors.blueAccent);
+      showSnackbar("Diet Updated Successfully!", Colors.blueAccent);
       setState(() {
         editID = 0;
       });
       _nameController.clear();
       fetchCuisine();
     } catch (e) {
-      print("ERROR EDITING CUISINE: $e");
+      print("ERROR EDITING Diet: $e");
     }
   }
 
@@ -104,7 +104,7 @@ class _CuisineState extends State<Cuisine> {
                       style: TextStyle(color: Colors.black),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return "Please enter a cuisine name.";
+                          return "Please enter a Diet name.";
                         }
                         if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
                           return 'Name must contain only letters.';
@@ -112,9 +112,9 @@ class _CuisineState extends State<Cuisine> {
                         return null;
                       },
                       decoration: InputDecoration(
-                        labelText: "Cuisine Name",
+                        labelText: "Diet Name",
                         labelStyle: TextStyle(color: Colors.black54),
-                        hintText: "Enter cuisine",
+                        hintText: "Enter Diet",
                         hintStyle: TextStyle(color: Colors.grey),
                         filled: true,
                         fillColor: Colors.white,
@@ -130,26 +130,26 @@ class _CuisineState extends State<Cuisine> {
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
                           if (editID == 0) {
-                            insertCuisine();
+                            insertDiet();
                           } else {
-                            editCuisine();
+                            editDiet();
                           }
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 245, 245, 245), 
-                        minimumSize: Size(100, 50), 
+                        backgroundColor: Color.fromARGB(255, 245, 245, 245), // Yellow
+                        minimumSize: Size(100, 50), // Full-width & taller button
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero, 
+                          borderRadius: BorderRadius.zero, // Rectangular shape
                         ),
                         padding: EdgeInsets.symmetric(vertical: 14),
                         elevation: 4,
                       ),
                       child: Text(
-                        editID == 0 ? "Add Cuisine" : "UPDATE CUISINE",
+                        editID == 0 ? "Add Diet" : "UPDATE DIET",
                         style: TextStyle(
                           color: const Color.fromARGB(255, 126, 126, 126),
-                          fontSize: 14, 
+                          fontSize: 14, // Bigger font
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -160,12 +160,13 @@ class _CuisineState extends State<Cuisine> {
             ),
           ),
           SizedBox(height: 20),
+
           // Cuisine List (Shorter & Prettier Cards)
           Expanded(
             child: ListView.builder(
-              itemCount: cuisineList.length,
+              itemCount: dietList.length,
               itemBuilder: (context, index) {
-                final data = cuisineList[index];
+                final data = dietList[index];
                 return Container(
                   margin: EdgeInsets.symmetric(vertical: 6),
                   decoration: BoxDecoration(
@@ -187,7 +188,7 @@ class _CuisineState extends State<Cuisine> {
                       child: Icon(Icons.restaurant_menu, color: Colors.black87),
                     ),
                     title: Text(
-                      data['cuisine_name'],
+                      data['diet_name'],
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -203,7 +204,7 @@ class _CuisineState extends State<Cuisine> {
                           onPressed: () {
                             setState(() {
                               editID = data['id'];
-                              _nameController.text = data['cuisine_name'];
+                              _nameController.text = data['diet_name'];
                             });
                           },
                         ),
@@ -211,7 +212,7 @@ class _CuisineState extends State<Cuisine> {
                         IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
                           onPressed: () {
-                            deleteCuisine(data['id'].toString());
+                            deleteDiet(data['id'].toString());
                           },
                         ),
                       ],

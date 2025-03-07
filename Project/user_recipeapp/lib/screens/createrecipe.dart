@@ -17,6 +17,7 @@ class _CreaterecipeState extends State<Createrecipe> {
   List<Map<String, dynamic>> categoryList = [];
   List<Map<String, dynamic>> cuisineList = [];
   List<Map<String, dynamic>> levelList = [];
+   List<Map<String, dynamic>> dietList = [];
   File? _image;
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _titleController = TextEditingController();
@@ -27,6 +28,7 @@ class _CreaterecipeState extends State<Createrecipe> {
   String? _selectedCategory;
   String? _selectedCuisine;
   String? _selectedLevel;
+  String? _selectedDiet;
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -81,6 +83,7 @@ class _CreaterecipeState extends State<Createrecipe> {
             'category_id': _selectedCategory,
             'cuisine_id': _selectedCuisine,
             'level_id': _selectedLevel,
+            'diet_id': _selectedDiet,
           })
           .select('id')
           .single();
@@ -135,6 +138,16 @@ class _CreaterecipeState extends State<Createrecipe> {
       });
     } catch (e) {
       print("Error fetching level: $e");
+    }
+  }
+  Future<void> fetchDiet() async {
+    try {
+      final response = await supabase.from("tbl_diet").select();
+      setState(() {
+       dietList = response; // ✅ Assign to levelList
+      });
+    } catch (e) {
+      print("Error fetching Diet: $e");
     }
   }
 
@@ -241,30 +254,50 @@ class _CreaterecipeState extends State<Createrecipe> {
                   ),
                 ),
                 SizedBox(width: 10),
-                Expanded(
+                DropdownButtonFormField<String>(
+                  value: _selectedCuisine,
+                  decoration: const InputDecoration(
+                    labelText: "Cuisine",
+                    border: OutlineInputBorder(),
+                  ),
+                  items: cuisineList.map((item) {
+                    return DropdownMenuItem<String>(
+                      value: item['id']?.toString(),
+                      child: Text(item['cuisine_name']?.toString() ?? ''),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCuisine = value;
+                    });
+                  },
+                  validator: (value) =>
+                      value == null ? 'Please select a cuisine' : null,
+                ),
+              ],
+            ),
+            Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _selectedCuisine,
+                    value: _selectedLevel,
                     decoration: const InputDecoration(
-                      labelText: "Cuisine",
+                      labelText: "Dietary Preferance",
                       border: OutlineInputBorder(),
                     ),
-                    items: cuisineList.map((item) {
+                    items: levelList.map((item) {
                       return DropdownMenuItem<String>(
                         value: item['id']?.toString(),
-                        child: Text(item['cuisine_name']?.toString() ?? ''),
+                        child: Text(item['diet_name']?.toString() ?? ''),
                       );
                     }).toList(),
                     onChanged: (value) {
                       setState(() {
-                        _selectedCuisine = value;
+                        _selectedDiet = value;
                       });
                     },
                     validator: (value) =>
-                        value == null ? 'Please select a cuisine' : null,
+                        value == null ? 'Please select a dietary plan' : null,
                   ),
                 ),
-              ],
-            ),
             const SizedBox(height: 20),
             // Serving Size
             TextFormField(

@@ -67,7 +67,11 @@ class _UserDashboardState extends State<UserDashboard> {
 
               final recipe =
                   shuffledRecipes[index]; // Access shuffled items correctly
+                  onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => RecipePage(recipeId: recipe['id'].toString(),isEditable: false,),));
+              };
               return Container(
+                
                 width: 160,
                 margin: const EdgeInsets.only(right: 10),
                 decoration: BoxDecoration(
@@ -134,6 +138,7 @@ class _UserDashboardState extends State<UserDashboard> {
             itemCount: userList.length, // Placeholder count
             itemBuilder: (context, index) {
               final data = userList[index];
+              
               return Container(
                 width: 60,
                 margin: const EdgeInsets.only(right: 10),
