@@ -5,7 +5,8 @@ import 'package:user_recipeapp/screens/profile.dart'; // Import profile screen
 
 class RecipePage extends StatefulWidget {
   final String recipeId;
-  const RecipePage({super.key, required this.recipeId});
+  final bool isEditable;
+  const RecipePage({super.key, required this.recipeId,this.isEditable = true});
 
   @override
   State<RecipePage> createState() => _RecipePageState();
@@ -69,8 +70,8 @@ class _RecipePageState extends State<RecipePage> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
-        actions: [
-          PopupMenuButton<String>(
+        actions:  [
+         widget.isEditable ? PopupMenuButton<String>(
             color: Colors.white,
             onSelected: (value) {
               if (value == "Delete") {
@@ -100,7 +101,7 @@ class _RecipePageState extends State<RecipePage> {
                 ),
               ];
             },
-          ),
+          ) : Container(),
         ],
       ),
       body: SingleChildScrollView(
@@ -273,7 +274,7 @@ class _RecipePageState extends State<RecipePage> {
                 ],
               ),
             ),
-           Center(
+           widget.isEditable ? Center(
              child: SizedBox(
                 width: 150,
                child: ElevatedButton(
@@ -306,7 +307,7 @@ class _RecipePageState extends State<RecipePage> {
                  ),
                ),
              ),
-           )
+           ) : Container()
 
           ],
         ),

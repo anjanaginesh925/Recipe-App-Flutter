@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:user_recipeapp/screens/createrecipe.dart';
 import 'package:user_recipeapp/screens/favorties.dart';
 import 'package:user_recipeapp/screens/profile.dart';
+import 'package:user_recipeapp/screens/recipie_suggestion.dart';
 import 'package:user_recipeapp/screens/search.dart';
 import 'package:user_recipeapp/screens/user_dash.dart';
 
@@ -17,7 +18,7 @@ class _HomePageState extends State<HomePage> {
 
   List<Map<String, dynamic>> pages = [
     {'label': "Home", 'icon': Icons.home, 'page': UserDashboard()},
-    {'label': "Search", 'icon': Icons.search, 'page': Search()},
+    {'label': "Search", 'icon': Icons.search, 'page': SelectItemsPage()},
     {
       'label': "Add Recipe",
       'icon': Icons.add_circle_outline_sharp,
@@ -48,6 +49,9 @@ class _HomePageState extends State<HomePage> {
           selectedItemColor: Color.fromRGBO(255, 213, 85, 1),
           currentIndex: _selectedIndex,
           onTap: (value) {
+            if(value == 1){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => SelectItemsPage()));
+            }
             setState(() {
               _selectedIndex = value;
             });
