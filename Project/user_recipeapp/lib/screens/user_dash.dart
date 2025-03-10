@@ -19,23 +19,32 @@ class _UserDashboardState extends State<UserDashboard> {
   List<Map<String, dynamic>> reciepeList = [];
 
   Future<void> fetchRecipie() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-      final response = await supabase.from('tbl_recipe').select();
-      setState(() {
-        isLoading = false;
-        reciepeList = response;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print("Error: $e");
-    }
-  }
+  try {
+    setState(() {
+      isLoading = true;
+    });
 
+    String uid = supabase.auth.currentUser!.id; // Get logged-in user ID
+    print("Current User ID: $uid"); // Debugging
+
+    final response = await supabase
+        .from('tbl_recipe')
+        .select()
+        .neq('user_id', uid).eq('recipe_status', 1);
+
+    print("Fetched Recipes: $response"); // Debugging
+
+    setState(() {
+      isLoading = false;
+      reciepeList = response;
+    });
+  } catch (e) {
+    setState(() {
+      isLoading = false;
+    });
+    print("Error fetching recipes: $e");
+  }
+}
   List<Map<String, dynamic>> userList = [];
 
   Future<void> fetchUser() async {
@@ -61,8 +70,10 @@ class _UserDashboardState extends State<UserDashboard> {
   @override
   Widget build(BuildContext context) {
     return isLoading ? Center(
+
       child: CircularProgressIndicator(),
     ) : Column(
+
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Trending Recipes
@@ -159,7 +170,7 @@ class _UserDashboardState extends State<UserDashboard> {
               
               return GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfile(),));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfile(uid: data['user_id'],),));
                 },
                 child: Container(
                   width: 60,

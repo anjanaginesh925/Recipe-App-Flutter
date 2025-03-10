@@ -37,7 +37,7 @@ class _ProfileState extends State<Profile> {
       final response = await supabase
           .from("tbl_recipe")
           .select()
-          .eq('user_id', supabase.auth.currentUser!.id);
+          .eq('user_id', supabase.auth.currentUser!.id).eq('recipe_status', 1);
       setState(() {
         recipeList = response;
       });
@@ -55,10 +55,11 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return
+     Column(
       children: [
         const SizedBox(height: 20),
-
+     
         // Profile Picture
         CircleAvatar(
           radius: 50,

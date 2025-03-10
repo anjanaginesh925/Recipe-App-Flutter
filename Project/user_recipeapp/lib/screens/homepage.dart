@@ -39,7 +39,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: Colors.white,
         title: const Text(
           "Find Best Recipes for Cooking",
           style: TextStyle(
@@ -51,6 +55,7 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.all(16.0),
           child: pages[_selectedIndex]['page']),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
           unselectedItemColor: const Color.fromARGB(255, 141, 141, 141),
           selectedItemColor: Color.fromRGBO(255, 213, 85, 1),
           currentIndex: _selectedIndex,
@@ -66,6 +71,7 @@ class _HomePageState extends State<HomePage> {
           items: pages.map(
             (item) {
               return BottomNavigationBarItem(
+                backgroundColor: Colors.white,
                 icon: Icon(item['icon']),
                 label: item['label'],
               );

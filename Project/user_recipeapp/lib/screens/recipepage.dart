@@ -6,12 +6,11 @@ import 'package:user_recipeapp/screens/profile.dart'; // Import profile screen
 class RecipePage extends StatefulWidget {
   final String recipeId;
   final bool isEditable;
-  const RecipePage({super.key, required this.recipeId,this.isEditable = true});
+  const RecipePage({super.key, required this.recipeId, this.isEditable = true});
 
   @override
   State<RecipePage> createState() => _RecipePageState();
 }
-
 
 class _RecipePageState extends State<RecipePage> {
   Map<String, dynamic>? recipe;
@@ -25,6 +24,7 @@ class _RecipePageState extends State<RecipePage> {
     super.initState();
     fetchRecipeDetails();
   }
+
   Future<void> insertFavorite() async {
     try {
       await supabase.from('tbl_favorite').insert({
@@ -40,14 +40,12 @@ class _RecipePageState extends State<RecipePage> {
         SnackBar(
           content: Text('Error adding to favorites: $e'),
         ),
-  );
-}
-} 
- 
+      );
+    }
+  }
 
   Future<void> fetchRecipeDetails() async {
     try {
-      print("Fetching recipe details. ID: ${widget.recipeId}");
       final response = await supabase
           .from('tbl_recipe')
           .select(
@@ -90,38 +88,40 @@ class _RecipePageState extends State<RecipePage> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
-        actions:  [
-         widget.isEditable ? PopupMenuButton<String>(
-            color: Colors.white,
-            onSelected: (value) {
-              if (value == "Delete") {
-                // Handle delete action
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return [
-                const PopupMenuItem<String>(
-                  value: "Delete",
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_outline_outlined,
-                          color: Color.fromARGB(255, 0, 0, 0)),
-                      SizedBox(width: 8),
-                      SizedBox(
-                        width: 100, // Adjust width as needed
-                        child: Text(
-                          "Delete",
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 0, 0, 0),
-                              fontWeight: FontWeight.bold),
+        actions: [
+          widget.isEditable
+              ? PopupMenuButton<String>(
+                  color: Colors.white,
+                  onSelected: (value) {
+                    if (value == "Delete") {
+                      // Handle delete action
+                    }
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return [
+                      const PopupMenuItem<String>(
+                        value: "Delete",
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline_outlined,
+                                color: Color.fromARGB(255, 0, 0, 0)),
+                            SizedBox(width: 8),
+                            SizedBox(
+                              width: 100, // Adjust width as needed
+                              child: Text(
+                                "Delete",
+                                style: TextStyle(
+                                    color: Color.fromARGB(255, 0, 0, 0),
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ];
-            },
-          ) : Container(),
+                    ];
+                  },
+                )
+              : Container(),
         ],
       ),
       body: SingleChildScrollView(
@@ -131,36 +131,37 @@ class _RecipePageState extends State<RecipePage> {
           children: [
             // Recipe Image
             // Recipe Image with Heart Icon
-Stack(
-  children: [
-    ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: Image.network(
-        recipe?['recipe_photo'] ?? '',
-        width: double.infinity,
-        height: 300,
-        fit: BoxFit.cover,
-      ),
-    ),
-    Positioned(
-      top: 10,
-      right: 10,
-      child: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.black.withOpacity(0.5), // Semi-transparent black background
-        ),
-        child: IconButton(
-          icon: const Icon(Icons.favorite, color: Colors.white),
-          onPressed: () {
-            insertFavorite();
-            // Handle favorite action (e.g., toggle favorite state)
-          },
-        ),
-      ),
-    ),
-  ],
-),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    recipe?['recipe_photo'] ?? '',
+                    width: double.infinity,
+                    height: 300,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withOpacity(
+                          0.5), // Semi-transparent black background
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.favorite, color: Colors.white),
+                      onPressed: () {
+                        insertFavorite();
+                        // Handle favorite action (e.g., toggle favorite state)
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
 
             const SizedBox(height: 10),
 
@@ -317,41 +318,45 @@ Stack(
                 ],
               ),
             ),
-           widget.isEditable ? Center(
-             child: SizedBox(
-                width: 150,
-               child: ElevatedButton(
-                 onPressed: () {
-                   Navigator.push(
-                     context,
-                     MaterialPageRoute(
-                       builder: (context) => HomePage(),
-                     ),
-                   );
-                 },
-                 style: ElevatedButton.styleFrom(
-                   backgroundColor: Colors.white, // White background
-                   padding: const EdgeInsets.symmetric(vertical: 5), // Makes it taller
-                   shape: RoundedRectangleBorder(
-                     borderRadius: BorderRadius.zero, // Makes it a perfect rectangle
-                     side: BorderSide(color: Colors.black), // Optional: Black border for better visibility
-                   ),
-                   minimumSize: const Size
-                   (double.infinity, 15
-                   ), // Full width, adjust height as needed
-                 ),
-                 child: const Text(
-                   'DONE',
-                   style: TextStyle(
-                     color: Colors.black, // Black text for contrast
-                     fontSize: 18,
-                     fontWeight: FontWeight.bold,
-                   ),
-                 ),
-               ),
-             ),
-           ) : Container()
-
+            widget.isEditable
+                ? Center(
+                    child: SizedBox(
+                      width: 150,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HomePage(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white, // White background
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 5), // Makes it taller
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius
+                                .zero, // Makes it a perfect rectangle
+                            side: BorderSide(
+                                color: Colors
+                                    .black), // Optional: Black border for better visibility
+                          ),
+                          minimumSize: const Size(double.infinity,
+                              15), // Full width, adjust height as needed
+                        ),
+                        child: const Text(
+                          'DONE',
+                          style: TextStyle(
+                            color: Colors.black, // Black text for contrast
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container()
           ],
         ),
       ),

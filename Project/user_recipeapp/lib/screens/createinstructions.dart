@@ -78,6 +78,25 @@ class _InstructionsState extends State<Instructions> {
       print("ERROR DELETING INSTRUCTION: $e");
     }
   }
+  Future<void> saveRecipe () async {
+    try {
+      await supabase
+          .from('tbl_recipe')
+          .update({'recipe_status':1}).eq('id', widget.recipieId);
+      Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => RecipePage(recipeId: widget.recipieId,)),
+    );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Failed to delete instruction. Try again!"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      print("ERROR DELETING INSTRUCTION: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,10 +175,7 @@ class _InstructionsState extends State<Instructions> {
     ),
   ),
   onPressed: () {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => RecipePage(recipeId: widget.recipieId,)),
-    );
+    saveRecipe();
   },
   child: const Text("SAVE"),
 ),

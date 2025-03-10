@@ -4,7 +4,9 @@ import 'package:user_recipeapp/screens/editprofile.dart';
 import 'package:user_recipeapp/screens/viewrecipe.dart';
 
 class UserProfile extends StatefulWidget {
-  const UserProfile({super.key});
+  final String uid;
+  const UserProfile({super.key, required this.uid});
+
 
   @override
   State<UserProfile> createState() => _UserProfileState();
@@ -20,7 +22,7 @@ class _UserProfileState extends State<UserProfile> {
       final response = await supabase
           .from('tbl_user')
           .select()
-          .eq('user_id', supabase.auth.currentUser!.id)
+          .eq('user_id', widget.uid)
           .single();
       setState(() {
         name = response['user_name']?.toString() ?? 'Unknown User';
@@ -36,7 +38,7 @@ class _UserProfileState extends State<UserProfile> {
       final response = await supabase
           .from("tbl_recipe")
           .select()
-          .eq('user_id', supabase.auth.currentUser!.id);
+          .eq('user_id', widget.uid).eq('recipe_status', 1);
       setState(() {
         recipeList = response;
       });
@@ -65,6 +67,7 @@ class _UserProfileState extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(title: const Text("Profile")),
       body: SingleChildScrollView(
         child: Column(
