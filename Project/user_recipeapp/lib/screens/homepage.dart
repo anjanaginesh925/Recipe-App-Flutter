@@ -19,6 +19,10 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> pages = [
     {'label': "Home", 'icon': Icons.home, 'page': UserDashboard()},
     {'label': "Search", 'icon': Icons.search, 'page': SelectItemsPage()},
+    {'label': "Search",
+      'icon': Icons.person_outline_outlined,
+      'page': Search()
+    },
     {
       'label': "Add Recipe",
       'icon': Icons.add_circle_outline_sharp,
@@ -38,7 +42,9 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text(
           "Find Best Recipes for Cooking",
-          style: TextStyle(fontWeight: FontWeight.bold,),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -49,8 +55,9 @@ class _HomePageState extends State<HomePage> {
           selectedItemColor: Color.fromRGBO(255, 213, 85, 1),
           currentIndex: _selectedIndex,
           onTap: (value) {
-            if(value == 1){
-              Navigator.push(context, MaterialPageRoute(builder: (context) => SelectItemsPage()));
+            if (value == 1) {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SelectItemsPage()));
             }
             setState(() {
               _selectedIndex = value;

@@ -12,6 +12,7 @@ class RecipePage extends StatefulWidget {
   State<RecipePage> createState() => _RecipePageState();
 }
 
+
 class _RecipePageState extends State<RecipePage> {
   Map<String, dynamic>? recipe;
   List<Map<String, dynamic>> ingredients = [];
@@ -24,6 +25,25 @@ class _RecipePageState extends State<RecipePage> {
     super.initState();
     fetchRecipeDetails();
   }
+  Future<void> insertFavorite() async {
+    try {
+      await supabase.from('tbl_favorite').insert({
+        'recipe_id': widget.recipeId,
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Recipe added to favorites!'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error adding to favorites: $e'),
+        ),
+  );
+}
+} 
+ 
 
   Future<void> fetchRecipeDetails() async {
     try {
@@ -133,6 +153,7 @@ Stack(
         child: IconButton(
           icon: const Icon(Icons.favorite, color: Colors.white),
           onPressed: () {
+            insertFavorite();
             // Handle favorite action (e.g., toggle favorite state)
           },
         ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:user_recipeapp/main.dart';
+import 'package:user_recipeapp/screens/profile.dart';
 import 'package:user_recipeapp/screens/recipepage.dart';
+import 'package:user_recipeapp/screens/userprofile.dart';
 
 class UserDashboard extends StatefulWidget {
   const UserDashboard({super.key});
@@ -10,15 +13,25 @@ class UserDashboard extends StatefulWidget {
 }
 
 class _UserDashboardState extends State<UserDashboard> {
+
+  bool isLoading = false;
+
   List<Map<String, dynamic>> reciepeList = [];
 
   Future<void> fetchRecipie() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       final response = await supabase.from('tbl_recipe').select();
       setState(() {
+        isLoading = false;
         reciepeList = response;
       });
     } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
       print("Error: $e");
     }
   }
@@ -47,7 +60,9 @@ class _UserDashboardState extends State<UserDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return isLoading ? Center(
+      child: CircularProgressIndicator(),
+    ) : Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Trending Recipes
@@ -67,24 +82,27 @@ class _UserDashboardState extends State<UserDashboard> {
 
               final recipe =
                   shuffledRecipes[index]; // Access shuffled items correctly
-                  onTap: () {
+                  
+              return GestureDetector(
+                onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => RecipePage(recipeId: recipe['id'].toString(),isEditable: false,),));
-              };
-              return Container(
-                
-                width: 160,
-                margin: const EdgeInsets.only(right: 10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.grey[300], // Placeholder color
-                  image: DecorationImage(image: NetworkImage(recipe['recipe_photo']),fit: BoxFit.cover),
+              },
+                child: Container(
+                  
+                  width: 160,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey[300], // Placeholder color
+                    image: DecorationImage(image: NetworkImage(recipe['recipe_photo']),fit: BoxFit.cover),
+                  ),
+                  // child: Center(
+                  //   child: Text(
+                  //     recipe['recipe_name'], // Assuming your recipe has a 'name' field
+                  //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  //   ),
+                  // ),
                 ),
-                // child: Center(
-                //   child: Text(
-                //     recipe['recipe_name'], // Assuming your recipe has a 'name' field
-                //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                //   ),
-                // ),
               );
             },
           ),
@@ -139,18 +157,23 @@ class _UserDashboardState extends State<UserDashboard> {
             itemBuilder: (context, index) {
               final data = userList[index];
               
-              return Container(
-                width: 60,
-                margin: const EdgeInsets.only(right: 10),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.blue[300],
-                  image:  data['user_photo'] != null ? DecorationImage(image: NetworkImage(data['user_photo']),fit: BoxFit.cover) : null,
-                  // Placeholder color
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfile(),));
+                },
+                child: Container(
+                  width: 60,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.blue[300],
+                    image:  data['user_photo'] != null ? DecorationImage(image: NetworkImage(data['user_photo']),fit: BoxFit.cover) : null,
+                    // Placeholder color
+                  ),
+                  child: data['user_photo'] == null ? const Center(
+                    child: Icon(Icons.person, color: Colors.white),
+                  ): null,
                 ),
-                child: data['user_photo'] == null ? const Center(
-                  child: Icon(Icons.person, color: Colors.white),
-                ): null,
               );
             },
           ),

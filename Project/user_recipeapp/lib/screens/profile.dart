@@ -125,15 +125,8 @@ class _ProfileState extends State<Profile> {
           ],
         ),
 
-        const SizedBox(height: 10),
-
-        // Follow Button
-        ElevatedButton(
-          onPressed: () {},
-          child: const Text('Follow'),
-        ),
-
-        const SizedBox(height: 10),
+       
+        const SizedBox(height: 50),
 
         // Grid for Posts
         GridView.builder(
