@@ -18,10 +18,10 @@ class _HomePageState extends State<HomePage> {
 
   List<Map<String, dynamic>> pages = [
     {'label': "Home", 'icon': Icons.home, 'page': UserDashboard()},
-    {'label': "Search", 'icon': Icons.search, 'page': SelectItemsPage()},
+    {'label': "Search", 'icon': Icons.search, 'page': Search()},
     {'label': "Search",
       'icon': Icons.person_outline_outlined,
-      'page': Search()
+      'page': SelectItemsPage()
     },
     {
       'label': "Add Recipe",
@@ -57,13 +57,13 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
           unselectedItemColor: const Color.fromARGB(255, 141, 141, 141),
-          selectedItemColor: Color.fromRGBO(255, 213, 85, 1),
+          selectedItemColor: Color(0xFF1F7D53),
           currentIndex: _selectedIndex,
           onTap: (value) {
-            if (value == 1) {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SelectItemsPage()));
-            }
+            // if (value == 1) {
+            //   Navigator.push(context,
+            //       MaterialPageRoute(builder: (context) => SelectItemsPage()));
+            // }
             setState(() {
               _selectedIndex = value;
             });

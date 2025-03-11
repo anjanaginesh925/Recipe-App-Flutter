@@ -253,8 +253,8 @@ class _IngredientsState extends State<Ingredients> {
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromRGBO(255, 213, 85, 1),
-                foregroundColor: Colors.black,
+                backgroundColor: Color(0xFF1F7D53),
+                foregroundColor: const Color.fromARGB(255, 255, 255, 255),
                 minimumSize: const Size(200, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

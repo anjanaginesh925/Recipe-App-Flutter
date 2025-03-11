@@ -102,7 +102,7 @@ class _LoginState extends State<Login> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    Color.fromRGBO(255, 213, 85,1), // Custom color
+                    Color(0xFF1F7D53), // Custom color
                 foregroundColor: Colors.black, // Text color
               ),
               child: const Text("LOG IN"),
@@ -123,7 +123,7 @@ class _LoginState extends State<Login> {
                   child: const Text("Register",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Color.fromRGBO(255, 213, 85, 1),
+                        color: Color(0xFF1F7D53), 
                       )),
                 ),
               ],

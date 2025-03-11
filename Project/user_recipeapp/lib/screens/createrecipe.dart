@@ -297,10 +297,9 @@ class _CreaterecipeState extends State<Createrecipe> {
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromRGBO(
-                      255, 213, 85, 1), // Change this to any color you want
+                  backgroundColor: Color(0xFF1F7D53), // Change this to any color you want
                   foregroundColor:
-                      const Color.fromARGB(255, 0, 0, 0), // Text color
+                      const Color.fromARGB(255, 255, 255, 255), // Text color
                   minimumSize: const Size(200, 50), // Width: 200, Height: 50
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(

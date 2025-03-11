@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:user_recipeapp/main.dart';
-import 'package:user_recipeapp/screens/editprofile.dart';
+import 'package:user_recipeapp/screens/addcomment.dart';
+import 'package:user_recipeapp/screens/comments.dart';
 import 'package:user_recipeapp/screens/viewrecipe.dart';
 
 class UserProfile extends StatefulWidget {
   final String uid;
   const UserProfile({super.key, required this.uid});
-
 
   @override
   State<UserProfile> createState() => _UserProfileState();
@@ -38,7 +38,8 @@ class _UserProfileState extends State<UserProfile> {
       final response = await supabase
           .from("tbl_recipe")
           .select()
-          .eq('user_id', widget.uid).eq('recipe_status', 1);
+          .eq('user_id', widget.uid)
+          .eq('recipe_status', 1);
       setState(() {
         recipeList = response;
       });
@@ -93,29 +94,34 @@ class _UserProfileState extends State<UserProfile> {
             ),
 
             const SizedBox(height: 50),
-
-           ElevatedButton(
-  onPressed: () {},
-  style: ElevatedButton.styleFrom(
-    backgroundColor: const Color(0xFFFFF8DC), // Light pastel yellow
-    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(8), // Smooth square shape
-      side: const BorderSide(color: Color(0xFFFFE4B5), width: 1.5), // Softer yellow border
-    ),
-    elevation: 0, // Flat, modern look
-  ),
-  child: const Text(
-    'Follow',
-    style: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: Colors.black, // Black text for contrast
-      letterSpacing: 0.8,
-    ),
-  ),
-),
-
+            ElevatedButton(
+              onPressed: () {
+                // Follow action
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    const Color.fromRGBO(31, 125, 83, 1), // Custom green color
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 40, vertical: 12), // Adjusted padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8), // Smooth square shape
+                  side: const BorderSide(
+                      color: Color.fromRGBO(25, 105, 70, 1),
+                      width: 1.5), // Slightly darker border
+                ),
+                elevation: 10, // Added shadow for depth
+                shadowColor: Colors.black.withOpacity(1), // Soft shadow color
+              ),
+              child: const Text(
+                'Follow',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white, // White text for contrast
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ),
 
             const SizedBox(height: 50),
 
@@ -139,7 +145,8 @@ class _UserProfileState extends State<UserProfile> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ViewRecipe(recipeId: data['id']),
+                          builder: (context) =>
+                              ViewRecipe(recipeId: data['id']),
                         ),
                       );
                     },
@@ -172,8 +179,8 @@ class _UserProfileState extends State<UserProfile> {
                                 child: GestureDetector(
                                   onTap: () => addToFavorites(data['id']),
                                   child: const Icon(
-                                    Icons.favorite_border,
-                                    color: Color.fromARGB(255, 2, 2, 2),
+                                    Icons.favorite,
+                                    color: Color.fromARGB(255, 255, 255, 255),
                                     size: 24,
                                   ),
                                 ),
@@ -235,11 +242,19 @@ class _UserProfileState extends State<UserProfile> {
 
                                 // Comment Icon (Functional)
                                 GestureDetector(
-                                  onTap: () => openComments(data['id']),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            AddComment(recipeId: data['id']),
+                                      ),
+                                    );
+                                  },
                                   child: const Icon(
                                     Icons.mode_comment_outlined,
                                     color: Colors.grey,
-                                    size: 20,
+                                    size: 30,
                                   ),
                                 ),
                               ],

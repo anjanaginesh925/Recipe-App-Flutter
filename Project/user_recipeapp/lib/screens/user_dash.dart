@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:user_recipeapp/main.dart';
-import 'package:user_recipeapp/screens/profile.dart';
 import 'package:user_recipeapp/screens/recipepage.dart';
 import 'package:user_recipeapp/screens/userprofile.dart';
 

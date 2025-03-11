@@ -167,8 +167,8 @@ class _InstructionsState extends State<Instructions> {
             const SizedBox(height: 300),
             ElevatedButton(
   style: ElevatedButton.styleFrom(
-    backgroundColor: const Color.fromRGBO(255, 213, 85, 1),
-    foregroundColor: Colors.black,
+    backgroundColor: Color(0xFF1F7D53),
+    foregroundColor: const Color.fromARGB(255, 245, 245, 245),
     minimumSize: const Size(200, 50),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(8),

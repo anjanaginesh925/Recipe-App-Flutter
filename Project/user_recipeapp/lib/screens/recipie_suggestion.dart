@@ -14,6 +14,7 @@ class _SelectItemsPageState extends State<SelectItemsPage> {
   List<Map<String, dynamic>> items = [];
   Set<int> selectedItems = {}; // Store selected item IDs
   bool isLoading = true;
+  String searchQuery = "";
 
   @override
   void initState() {
@@ -31,46 +32,110 @@ class _SelectItemsPageState extends State<SelectItemsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Select Available Items")),
-      body: isLoading
+    List<Map<String, dynamic>> filteredItems = items
+        .where((item) => item['item_name']
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase()))
+        .toList();
+
+    return isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-            shrinkWrap: true,
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return CheckboxListTile(
-                  title: Text(item['item_name']),
-                  value: selectedItems.contains(item['id']),
-                  onChanged: (bool? selected) {
-                    setState(() {
-                      if (selected == true) {
-                        selectedItems.add(item['id']);
-                      } else {
-                        selectedItems.remove(item['id']);
-                      }
-                    });
-                  },
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.search),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RecipeSuggestionPage(
-                availableItemIds: selectedItems.toList(),
+          : Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                children: [
+                  TextFormField(
+                    decoration: InputDecoration(
+                      hintText: "Search for items",
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 620,
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: filteredItems.map((item) {
+                          return ChoiceChip(
+                        label: Text(
+                          item['item_name'],
+                          style: TextStyle(
+                            color: selectedItems.contains(item['id'])
+                                ? Colors.white
+                                : Colors.black,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        selected: selectedItems.contains(item['id']),
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              selectedItems.add(item['id']);
+                            } else {
+                              selectedItems.remove(item['id']);
+                            }
+                          });
+                        },
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        selectedColor:Color.fromRGBO(31, 125, 83, 1),
+                        backgroundColor: Colors.grey[200],
+                        checkmarkColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        elevation: 2,
+                      );
+                    }).toList(),
+                  ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+ElevatedButton(
+  onPressed: () {
+   Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RecipeSuggestionPage(
+                            availableItemIds: selectedItems.toList(),
+                          ),
+                        ),
+                      );
+  },
+  style: ElevatedButton.styleFrom(
+    minimumSize: Size(300, 50), // Width: 200, Height: 50
+    backgroundColor: Color(0xFF1F7D53),
+    foregroundColor: Colors.white,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    elevation: 4,
+  ),
+  child: Text(
+    "Get Recipe",
+    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  ),
+),
+
+                ],
               ),
-            ),
-          );
-        },
-      ),
-    );
+            );
   }
 }
+
 
 class RecipeSuggestionPage extends StatefulWidget {
   final List<int> availableItemIds;

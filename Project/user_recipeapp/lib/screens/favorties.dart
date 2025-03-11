@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:user_recipeapp/main.dart';
-import 'package:user_recipeapp/screens/recipepage.dart';
 import 'package:user_recipeapp/screens/viewrecipe.dart';
 
 class Favorties extends StatefulWidget {
@@ -85,7 +84,7 @@ class _FavortiesState extends State<Favorties> {
               trailing: IconButton(
                 icon: const Icon(
                   Icons.favorite,
-                  color: Color.fromARGB(255, 255, 220, 123),
+                  color: Color(0xFF1F7D53),
                 ),
                 onPressed: () {
                   deleteFavorites(id);
