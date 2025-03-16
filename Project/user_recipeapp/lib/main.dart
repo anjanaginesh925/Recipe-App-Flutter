@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:user_recipeapp/screens/followers.dart';
+import 'package:user_recipeapp/screens/homepage.dart';
 import 'package:user_recipeapp/screens/login.dart';
 
 Future<void> main() async {
@@ -22,5 +23,23 @@ class MainApp extends StatelessWidget {
       home: Login(),
       
    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Check if the user is already logged in
+    final session = supabase.auth.currentSession;
+
+    if (session != null) {
+      // User is logged in, navigate to HomePage
+      return HomePage();
+    } else {
+      // User is not logged in, navigate to LandingPage
+      return Login();
+    }
   }
 }

@@ -27,6 +27,7 @@ class _CreaterecipeState extends State<Createrecipe> {
   String? _selectedCategory;
   String? _selectedCuisine;
   String? _selectedLevel;
+  String? _recipeType; // New variable for Veg/Non-Veg selection
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -81,6 +82,7 @@ class _CreaterecipeState extends State<Createrecipe> {
             'category_id': _selectedCategory,
             'cuisine_id': _selectedCuisine,
             'level_id': _selectedLevel,
+            'recipie_type': _recipeType, // Optionally save this to the database
           })
           .select('id')
           .single();
@@ -265,7 +267,48 @@ class _CreaterecipeState extends State<Createrecipe> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Text(
+                  "Recipe Type: ",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
+                ),
+                Row(
+                  children: [
+                    Radio<String>(
+                      value: "Veg",
+                      groupValue: _recipeType,
+                      onChanged: (value) {
+                        setState(() {
+                          _recipeType = value;
+                        });
+                      },
+                      activeColor: const Color(0xFF1F7D53),
+                    ),
+                    const Text("Veg"),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Radio<String>(
+                      value: "Non-Veg",
+                      groupValue: _recipeType,
+                      onChanged: (value) {
+                        setState(() {
+                          _recipeType = value;
+                        });
+                      },
+                      activeColor: const Color(0xFF1F7D53),
+                    ),
+                    const Text("Non-Veg"),
+                  ],
+                ),
+              ],
+            ),
+          ),
             // Serving Size
             TextFormField(
               controller: _servingsizeController,

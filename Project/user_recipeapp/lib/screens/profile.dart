@@ -46,11 +46,37 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  int followerCount = 0;
+  int followingCount = 0;
+
+  followFollowingCount() async {
+    try {
+      final following = await supabase
+          .from('tbl_follow')
+          .count()
+          .eq('following_id', supabase.auth.currentUser!.id);
+          print(following);
+      final followers = await supabase
+          .from('tbl_follow')
+          .count()
+          .eq('follower_id', supabase.auth.currentUser!.id);
+          print(followers);
+      setState(() {
+        followerCount = followers;
+        followingCount = following;
+      });
+    } catch (e) {
+      print("Error fetching recipe: $e");
+      
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     fetchRecipe();
     fetchUser();
+    followFollowingCount();
   }
 
   @override
@@ -108,16 +134,16 @@ class _ProfileState extends State<Profile> {
               ],
             ),
             Column(
-              children: const [
-                Text('100',
+              children:  [
+                Text(followerCount.toString(),
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Text('Followers'),
               ],
             ),
             Column(
-              children: const [
-                Text('50',
+              children:  [
+                Text(followingCount.toString(),
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Text('Following'),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:user_recipeapp/main.dart';
 import 'package:user_recipeapp/screens/addcomment.dart';
-import 'package:user_recipeapp/screens/comments.dart';
 import 'package:user_recipeapp/screens/viewrecipe.dart';
 
 class UserProfile extends StatefulWidget {
@@ -16,6 +15,7 @@ class _UserProfileState extends State<UserProfile> {
   List<Map<String, dynamic>> recipeList = [];
   String name = '';
   String image = '';
+  String btn = "Loading....";
 
   Future<void> fetchUser() async {
     try {
@@ -30,6 +30,28 @@ class _UserProfileState extends State<UserProfile> {
       });
     } catch (e) {
       print("Error fetching user: $e");
+    }
+  }
+
+  followCheck() async {
+    try {
+      final response = await supabase
+          .from('tbl_follow')
+          .select()
+          .eq('following_id', widget.uid)
+          .eq('follower_id', supabase.auth.currentUser!.id);
+      if (response.length > 0) {
+        setState(() {
+          btn = "Unfollow";
+        });
+      } else {
+        setState(() {
+          btn = "Follow";
+        });
+      }
+    } catch (e) {
+      print("Error fetching follower: $e");
+      
     }
   }
 
@@ -63,6 +85,7 @@ class _UserProfileState extends State<UserProfile> {
     super.initState();
     fetchRecipe();
     fetchUser();
+    followCheck();
   }
 
   @override
@@ -95,9 +118,26 @@ class _UserProfileState extends State<UserProfile> {
 
             const SizedBox(height: 50),
             ElevatedButton(
-              onPressed: () {
-                // Follow action
-              },
+              onPressed: btn != "Loading...." ? () {
+                if(btn == "Follow"){
+                  supabase.from('tbl_follow').upsert([
+                    {
+                      'follower_id': supabase.auth.currentUser!.id,
+                      'following_id': widget.uid,
+                    }
+                  ]).then((value) {
+                    setState(() {
+                      btn = "Unfollow";
+                    });
+                  });
+                } else {
+                  supabase.from('tbl_follow').delete().eq('follower_id', supabase.auth.currentUser!.id).eq('following_id', widget.uid).then((value) {
+                    setState(() {
+                      btn = "Follow";
+                    });
+                  });
+                }
+              } : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor:
                     const Color.fromRGBO(31, 125, 83, 1), // Custom green color
@@ -112,8 +152,8 @@ class _UserProfileState extends State<UserProfile> {
                 elevation: 10, // Added shadow for depth
                 shadowColor: Colors.black.withOpacity(1), // Soft shadow color
               ),
-              child: const Text(
-                'Follow',
+              child: Text(
+                btn,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

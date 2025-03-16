@@ -152,22 +152,28 @@ class _CommentsState extends State<Comments> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text("Comments", style: TextStyle(color: Colors.black)),
+      appBar: AppBar(
+        title: const Text("Comments", style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
-  IconButton(
-    icon: const Icon(Icons.report_gmailerrorred_outlined, color: Colors.red, size: 30,), // Complaint Icon
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ComplaintPage(recipeId: widget.recipeId),
-        ),
-      );
-    },
-  ),
-],
+          IconButton(
+            icon: const Icon(
+              Icons.report_gmailerrorred_outlined,
+              color: Colors.red,
+              size: 30,
+            ), // Complaint Icon
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ComplaintPage(recipeId: widget.recipeId),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -186,92 +192,107 @@ class _CommentsState extends State<Comments> {
                       final currentUserId = supabase.auth.currentUser?.id;
                       final isUserComment = comment['user_id'] == currentUserId;
                       return Card(
-  color: Colors.white, // Set card background to white
-  margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-  elevation: 2, // Add slight shadow for a clean look
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(10), // Rounded corners for a modern feel
-  ),
-  child: Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              backgroundColor: Colors.grey[300],
-              backgroundImage: userPhoto.isNotEmpty
-                  ? NetworkImage(userPhoto)
-                  : null,
-              child: userPhoto.isEmpty
-                  ? const Icon(Icons.person, color: Colors.black)
-                  : null,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    comment['comment_content'] ?? '',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    "$userName - ${formatDate(comment['comment_date'])}",
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ),
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == "edit") {
-                  _editComment(comment);
-                } else if (value == "delete") {
-                  _deleteComment(comment['id']);
-                }
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: "edit",
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit, color:const Color(0xFF1F7D53), ),
-                      SizedBox(width: 8),
-                      Text("Edit"),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: "delete",
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete, color:const Color(0xFF1F7D53), ),
-                      SizedBox(width: 8),
-                      Text("Delete"),
-                    ],
-                  ),
-                ),
-              ],
-              icon: const Icon(Icons.more_horiz, color: Colors.black54),
-            ),
-          ],
-        ),
-        if (commentImage.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8), // Rounded image corners
-              child: Image.network(commentImage, height: 150, fit: BoxFit.cover),
-            ),
-          ),
-      ],
-    ),
-  ),
-);
+                        color: Colors.white, // Set card background to white
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 10),
+                        elevation: 2, // Add slight shadow for a clean look
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              10), // Rounded corners for a modern feel
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Colors.grey[300],
+                                    backgroundImage: userPhoto.isNotEmpty
+                                        ? NetworkImage(userPhoto)
+                                        : null,
+                                    child: userPhoto.isEmpty
+                                        ? const Icon(Icons.person,
+                                            color: Colors.black)
+                                        : null,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          comment['comment_content'] ?? '',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          "$userName - ${formatDate(comment['comment_date'])}",
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[600]),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuButton<String>(
+                                    onSelected: (value) {
+                                      if (value == "edit") {
+                                        _editComment(comment);
+                                      } else if (value == "delete") {
+                                        _deleteComment(comment['id']);
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(
+                                        value: "edit",
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.edit,
+                                              color: const Color(0xFF1F7D53),
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text("Edit"),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: "delete",
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.delete,
+                                              color: const Color(0xFF1F7D53),
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text("Delete"),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                    icon: const Icon(Icons.more_horiz,
+                                        color: Colors.black54),
+                                  ),
+                                ],
+                              ),
+                              if (commentImage.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                        8), // Rounded image corners
+                                    child: Image.network(commentImage,
+                                        height: 150, fit: BoxFit.cover),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
                   ),
           ),

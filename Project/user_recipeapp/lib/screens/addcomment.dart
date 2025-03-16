@@ -29,6 +29,7 @@ class _AddCommentState extends State<AddComment> {
 
   // Function to add a comment and rating
   Future<void> addComment() async {
+
     if ((_commentController.text.trim().isEmpty && _selectedImage == null) || _rating == 0 || isPosting) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please provide a rating and comment.")),
@@ -56,6 +57,7 @@ await supabase.storage.from('reciepes').uploadBinary(fileName, imageBytes);
     }
 
     try {
+      print("Adding comment...");
       // Insert into tbl_comment
       await supabase.from('tbl_comment').insert({
         'recipe_id': widget.recipeId,
