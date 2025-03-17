@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:user_recipeapp/main.dart';
 
-class ComplaintPage extends StatefulWidget {
+class Complaints extends StatefulWidget {
   final int recipeId;
 
-  const ComplaintPage({super.key, required this.recipeId});
+  const Complaints({super.key, required this.recipeId});
 
   @override
-  State<ComplaintPage> createState() => _ComplaintPageState();
+  State<Complaints> createState() => _ComplaintsState();
 }
 
-class _ComplaintPageState extends State<ComplaintPage> {
+class _ComplaintsState extends State<Complaints> {
   int _rating = 0;
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _complaintController = TextEditingController();
@@ -90,26 +90,24 @@ class _ComplaintPageState extends State<ComplaintPage> {
               ),
             ),
             const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: submitReviewAndComplaint,
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    const Color.fromARGB(255, 2, 0, 108), // Dark blue color
-                foregroundColor: Colors.white, // Text color
-                minimumSize:
-                    const Size(double.infinity, 50), // Full-width button
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // Rounded corners
-                ),
-              ),
-              child: const Text(
-                'Submit Report',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16, // Matching text size
-                ),
-              ),
-            ),
+           Center(
+             child: SizedBox(
+               width: 200, // Adjust this value as needed
+               child: ElevatedButton(
+                 onPressed: submitReviewAndComplaint,
+                 style: ElevatedButton.styleFrom(
+                   backgroundColor: const Color(0xFF1F7D53), // Dark blue color
+                   foregroundColor: Colors.white, // Text color
+                   minimumSize: const Size(50, 50), // Adjust width and height
+                   shape: RoundedRectangleBorder(
+                     borderRadius: BorderRadius.circular(20), // Rounded corners
+                   ),
+                 ),
+                 child: const Text("Submit"),
+               ),
+             ),
+           ),
+
 
             const SizedBox(height: 20),
             // You can also add any additional UI elements, like a status or info section

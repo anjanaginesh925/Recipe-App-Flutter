@@ -168,7 +168,7 @@ class _CommentsState extends State<Comments> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      ComplaintPage(recipeId: widget.recipeId),
+                      Complaints(recipeId: widget.recipeId),
                 ),
               );
             },

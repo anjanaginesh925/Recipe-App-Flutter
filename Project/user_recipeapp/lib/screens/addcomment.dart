@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:user_recipeapp/main.dart';
+import 'package:user_recipeapp/screens/complaints.dart';
 
 class AddComment extends StatefulWidget {
   final int recipeId;
@@ -179,6 +180,32 @@ await supabase.storage.from('reciepes').uploadBinary(fileName, imageBytes);
                 ),
               ],
             ),
+                   const SizedBox(height: 50),  
+                   Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    const Text("Have any Complaints? "),
+    GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Complaints(
+              recipeId: widget.recipeId,
+            ),
+          ),
+        );
+      },
+      child: const Text(
+        "Report Here",
+        style: TextStyle(
+          color:  Color(0xFF1F7D53),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  ],
+)
           ],
         ),
       ),
