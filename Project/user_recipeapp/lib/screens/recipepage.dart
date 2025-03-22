@@ -30,17 +30,39 @@ class _RecipePageState extends State<RecipePage> {
     fetchComments();
   }
 
-  Future<void> insertFavorite() async {
+Future<void> insertFavorite() async {
     try {
+      print("recipe_id: ${widget.recipeId}");
+      final response = await supabase
+          .from('tbl_favorite')
+          .select()
+          .eq('recipe_id', widget.recipeId)
+          .eq('user_id',
+              supabase.auth.currentUser!.id) // Use null-aware operator
+          .maybeSingle();
+      if (response != null) {
+        await supabase
+            .from('tbl_favorite')
+            .delete()
+            .eq('id', response['id']);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Recipe removed from favorites!'),
+          ),
+        );
+      }
+      else{
       await supabase.from('tbl_favorite').insert({
         'recipe_id': widget.recipeId,
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Recipe added to favorites!'),
         ),
       );
+      }
     } catch (e) {
+      print("Error fav: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error adding to favorites: $e'),
@@ -48,6 +70,26 @@ class _RecipePageState extends State<RecipePage> {
       );
     }
   }
+
+  bool isFavorite = false; // Track favorite status
+
+  Future<void> checkIfFavorite() async {
+    try {
+      final response = await supabase
+          .from('tbl_favorite')
+          .select()
+          .eq('recipe_id', widget.recipeId)
+          .eq('user_id', supabase.auth.currentUser!.id)
+          .maybeSingle();
+
+      setState(() {
+        isFavorite = response != null; // If response exists, it's a favorite
+      });
+    } catch (e) {
+      print("Error checking favorite: $e");
+    }
+  }
+
 
   Future<void> fetchRecipeDetails() async {
     try {
@@ -169,10 +211,11 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
         backgroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              _shareRecipe(recipe!);
-            },
+            icon: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? Colors.red : Colors.black,
+            ),
+            onPressed: insertFavorite,
           ),
           widget.isEditable
               ? PopupMenuButton<String>(
