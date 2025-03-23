@@ -152,7 +152,7 @@ class _CreaterecipeState extends State<Createrecipe> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(6.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -268,48 +268,48 @@ class _CreaterecipeState extends State<Createrecipe> {
               ],
             ),
             Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const Text(
-                  "Recipe Type: ",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
-                ),
-                Row(
-                  children: [
-                    Radio<String>(
-                      value: "Veg",
-                      groupValue: _recipeType,
-                      onChanged: (value) {
-                        setState(() {
-                          _recipeType = value;
-                        });
-                      },
-                      activeColor: const Color(0xFF1F7D53),
-                    ),
-                    const Text("Veg"),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Radio<String>(
-                      value: "Non-Veg",
-                      groupValue: _recipeType,
-                      onChanged: (value) {
-                        setState(() {
-                          _recipeType = value;
-                        });
-                      },
-                      activeColor: const Color(0xFF1F7D53),
-                    ),
-                    const Text("Non-Veg"),
-                  ],
-                ),
-              ],
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Recipe Type: ",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
+                  ),
+                  Row(
+                    children: [
+                      Radio<String>(
+                        value: "Veg",
+                        groupValue: _recipeType,
+                        onChanged: (value) {
+                          setState(() {
+                            _recipeType = value;
+                          });
+                        },
+                        activeColor: const Color(0xFF1F7D53),
+                      ),
+                      const Text("Veg"),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<String>(
+                        value: "Non-Veg",
+                        groupValue: _recipeType,
+                        onChanged: (value) {
+                          setState(() {
+                            _recipeType = value;
+                          });
+                        },
+                        activeColor: const Color(0xFF1F7D53),
+                      ),
+                      const Text("Non-Veg"),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-            // Serving Size
             TextFormField(
               controller: _servingsizeController,
               decoration: InputDecoration(
@@ -318,6 +318,7 @@ class _CreaterecipeState extends State<Createrecipe> {
               ),
               keyboardType: TextInputType.number,
             ),
+
             const SizedBox(height: 20),
             TextFormField(
               controller: _calorieController,
@@ -340,7 +341,8 @@ class _CreaterecipeState extends State<Createrecipe> {
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF1F7D53), // Change this to any color you want
+                  backgroundColor:
+                      Color(0xFF1F7D53), // Change this to any color you want
                   foregroundColor:
                       const Color.fromARGB(255, 255, 255, 255), // Text color
                   minimumSize: const Size(200, 50), // Width: 200, Height: 50

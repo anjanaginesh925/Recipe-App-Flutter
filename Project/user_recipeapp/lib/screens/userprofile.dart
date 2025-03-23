@@ -1,28 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:user_recipeapp/main.dart';
-import 'package:user_recipeapp/screens/addcomment.dart';
-import 'package:user_recipeapp/screens/viewrecipe.dart';
+import 'package:user_recipeapp/screens/followers_page.dart';
+import 'package:user_recipeapp/screens/following_page.dart';
+import 'package:user_recipeapp/screens/recipepage.dart';
 
-class UserProfile extends StatefulWidget {
-  final String uid;
-  const UserProfile({super.key, required this.uid});
+class UserProfilePage extends StatefulWidget {
+  final String userId;
+
+  const UserProfilePage({super.key, required this.userId});
 
   @override
-  State<UserProfile> createState() => _UserProfileState();
+  State<UserProfilePage> createState() => _UserProfilePageState();
 }
 
-class _UserProfileState extends State<UserProfile> {
+class _UserProfilePageState extends State<UserProfilePage> {
   List<Map<String, dynamic>> recipeList = [];
   String name = '';
   String image = '';
-  String btn = "Loading....";
+  int followerCount = 0;
+  int followingCount = 0;
+  bool isFollowing = false;
 
-  Future<void> fetchUser() async {
+  // Colors matching RecipeSearchAndSuggestionPage
+  final Color primaryColor = const Color(0xFF1F7D53);
+  final Color secondaryColor = const Color(0xFF2C3E50);
+  final Color accentColor = const Color(0xFFE67E22);
+
+  Future<void> _fetchUser() async {
     try {
       final response = await supabase
           .from('tbl_user')
           .select()
-          .eq('user_id', widget.uid)
+          .eq('user_id', widget.userId)
           .single();
       setState(() {
         name = response['user_name']?.toString() ?? 'Unknown User';
@@ -33,77 +42,139 @@ class _UserProfileState extends State<UserProfile> {
     }
   }
 
-  followCheck() async {
-    try {
-      final response = await supabase
-          .from('tbl_follow')
-          .select()
-          .eq('following_id', widget.uid)
-          .eq('follower_id', supabase.auth.currentUser!.id);
-      if (response.length > 0) {
-        setState(() {
-          btn = "Unfollow";
-        });
-      } else {
-        setState(() {
-          btn = "Follow";
-        });
-      }
-    } catch (e) {
-      print("Error fetching follower: $e");
-      
-    }
-  }
-
-  Future<void> fetchRecipe() async {
+  Future<void> _fetchRecipe() async {
     try {
       final response = await supabase
           .from("tbl_recipe")
-          .select()
-          .eq('user_id', widget.uid)
+          .select('''
+            id,
+            recipe_name,
+            recipe_photo,
+            recipe_calorie,
+            recipe_cookingtime,
+            recipe_status
+          ''')
+          .eq('user_id', widget.userId)
           .eq('recipe_status', 1);
       setState(() {
-        recipeList = response;
+        recipeList = List<Map<String, dynamic>>.from(response);
       });
     } catch (e) {
       print("Error fetching recipe: $e");
     }
   }
 
-  void addToFavorites(String recipeId) {
-    // Implement logic to add to favorites
-    print("Added to favorites: $recipeId");
+  Future<void> _followFollowingCount() async {
+    try {
+      final following = await supabase
+          .from('tbl_follow')
+          .count()
+          .eq('following_id', widget.userId);
+      final followers = await supabase
+          .from('tbl_follow')
+          .count()
+          .eq('follower_id', widget.userId);
+      setState(() {
+        followerCount = followers;
+        followingCount = following;
+      });
+    } catch (e) {
+      print("Error fetching follow counts: $e");
+    }
   }
 
-  void openComments(String recipeId) {
-    // Implement logic to open comment section
-    print("Open comments for: $recipeId");
+  Future<void> _checkFollowingStatus() async {
+    try {
+      final response = await supabase
+          .from('tbl_follow')
+          .select()
+          .eq('follower_id', supabase.auth.currentUser!.id)
+          .eq('following_id', widget.userId)
+          .maybeSingle();
+      setState(() {
+        isFollowing = response != null;
+      });
+    } catch (e) {
+      print("Error checking follow status: $e");
+    }
+  }
+
+  Future<void> _toggleFollow() async {
+    try {
+      if (isFollowing) {
+        await supabase
+            .from('tbl_follow')
+            .delete()
+            .eq('follower_id', supabase.auth.currentUser!.id)
+            .eq('following_id', widget.userId);
+        setState(() {
+          isFollowing = false;
+          followerCount--;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Unfollowed successfully'),
+            backgroundColor: primaryColor,
+          ),
+        );
+      } else {
+        await supabase.from('tbl_follow').insert({
+          'follower_id': supabase.auth.currentUser!.id,
+          'following_id': widget.userId,
+        });
+        setState(() {
+          isFollowing = true;
+          followerCount++;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Followed successfully'),
+            backgroundColor: primaryColor,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error toggling follow: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update follow status')),
+      );
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    fetchRecipe();
-    fetchUser();
-    followCheck();
+    _fetchRecipe();
+    _fetchUser();
+    _followFollowingCount();
+    _checkFollowingStatus();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text("Profile")),
-      body: SingleChildScrollView(
+      appBar: AppBar(
+        title: Text(
+          '$name\'s Profile',
+          style: TextStyle(color: secondaryColor, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: primaryColor),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-
             // Profile Picture
             CircleAvatar(
               radius: 50,
               backgroundColor: Colors.grey,
-              backgroundImage: NetworkImage(image),
-              child: image == ""
+              backgroundImage: image.isNotEmpty ? NetworkImage(image) : null,
+              child: image.isEmpty
                   ? const Icon(Icons.person, size: 50, color: Colors.white)
                   : null,
             ),
@@ -113,217 +184,241 @@ class _UserProfileState extends State<UserProfile> {
             // User Name
             Text(
               name,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: btn != "Loading...." ? () {
-                if(btn == "Follow"){
-                  supabase.from('tbl_follow').upsert([
-                    {
-                      'follower_id': supabase.auth.currentUser!.id,
-                      'following_id': widget.uid,
-                    }
-                  ]).then((value) {
-                    setState(() {
-                      btn = "Unfollow";
-                    });
-                  });
-                } else {
-                  supabase.from('tbl_follow').delete().eq('follower_id', supabase.auth.currentUser!.id).eq('following_id', widget.uid).then((value) {
-                    setState(() {
-                      btn = "Follow";
-                    });
-                  });
-                }
-              } : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    const Color.fromRGBO(31, 125, 83, 1), // Custom green color
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 40, vertical: 12), // Adjusted padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // Smooth square shape
-                  side: const BorderSide(
-                      color: Color.fromRGBO(25, 105, 70, 1),
-                      width: 1.5), // Slightly darker border
-                ),
-                elevation: 10, // Added shadow for depth
-                shadowColor: Colors.black.withOpacity(1), // Soft shadow color
-              ),
-              child: Text(
-                btn,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white, // White text for contrast
-                  letterSpacing: 0.8,
-                ),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: secondaryColor,
               ),
             ),
 
-            const SizedBox(height: 50),
+            const SizedBox(height: 10),
+
+            // Stats Row (Posts, Followers, Following)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      recipeList.length.toString(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: secondaryColor,
+                      ),
+                    ),
+                    const Text('Posts'),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FollowersPage(),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Text(
+                        followerCount.toString(),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: secondaryColor,
+                        ),
+                      ),
+                      const Text('Followers'),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FollowingPage(),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Text(
+                        followingCount.toString(),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: secondaryColor,
+                        ),
+                      ),
+                      const Text('Following'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 15),
+
+            // Follow/Unfollow Button
+            GestureDetector(
+              onTap: _toggleFollow,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isFollowing ? Colors.grey[300] : primaryColor,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  isFollowing ? 'Unfollow' : 'Follow',
+                  style: TextStyle(
+                    color: isFollowing ? secondaryColor : Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
 
             // Grid for Posts
-            GridView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              padding: const EdgeInsets.all(5),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                childAspectRatio: 0.75,
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: recipeList.length,
-              itemBuilder: (context, index) {
-                final data = recipeList[index];
-
-                return GestureDetector(
+            Expanded(
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.75,
+                ),
+                itemCount: recipeList.length,
+                itemBuilder: (context, index) {
+                  final recipe = recipeList[index];
+                  return GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              ViewRecipe(recipeId: data['id']),
+                          builder: (context) => RecipePage(
+                            recipeId: recipe['id'].toString(),
+                          ),
                         ),
                       );
                     },
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.15),
+                            spreadRadius: 1,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Stack(
-                            children: [
-                              // Recipe Image
-                              SizedBox(
-                                height: 195,
-                                width: double.infinity,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    data['recipe_photo']?.toString() ?? '',
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-
-                              // Heart (Favorite) Icon (Top-Right)
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: GestureDetector(
-                                  onTap: () => addToFavorites(data['id']),
-                                  child: const Icon(
-                                    Icons.favorite,
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    size: 24,
-                                  ),
-                                ),
-                              ),
-
-                              // Cooking Time (Bottom-Left)
-                              Positioned(
-                                bottom: 8,
-                                left: 8,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.6),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.access_time,
-                                          color: Colors.white, size: 16),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        data['recipe_cookingtime']
-                                                ?.toString() ??
-                                            'N/A',
-                                        style: const TextStyle(
-                                            color: Colors.white, fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 10),
-
-                          // Rating & Comments Section
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 4, horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            child: recipe['recipe_photo'] != null &&
+                                    recipe['recipe_photo'].isNotEmpty
+                                ? Image.network(
+                                    recipe['recipe_photo'],
+                                    height: 130,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    height: 130,
+                                    color: Colors.grey[200],
+                                    child: const Icon(
+                                      Icons.image,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Text(
+                                  recipe['recipe_name'] ?? 'Unnamed',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
                                 Row(
-                                  children: const [
-                                    Icon(Icons.star,
-                                        color: Colors.amber, size: 18),
-                                    SizedBox(width: 4),
-                                    Text("4.5",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
+                                  children: [
+                                    Icon(
+                                      Icons.local_fire_department,
+                                      size: 14,
+                                      color: accentColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${recipe['recipe_calorie'] ?? 'N/A'} cal',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
                                   ],
                                 ),
-
-                                // Comment Icon (Functional)
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            AddComment(recipeId: data['id']),
-                                      ),
-                                    );
-                                  },
-                                  child: const Icon(
-                                    Icons.mode_comment_outlined,
-                                    color: Colors.grey,
-                                    size: 30,
-                                  ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.timer_outlined,
+                                          size: 14,
+                                          color: accentColor,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          recipe['recipe_cookingtime'] ?? 'N/A',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
-
-                          // Recipe Name
-                          SizedBox(
-                            width: double.infinity,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              child: Text(
-                                data['recipe_name']?.toString() ??
-                                    'Unknown Recipe',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
-                          ),
                         ],
                       ),
-                    ));
-              },
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),

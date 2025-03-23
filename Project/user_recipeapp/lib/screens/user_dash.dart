@@ -15,6 +15,7 @@ class _UserDashboardState extends State<UserDashboard> {
   bool isLoading = false;
 
   List<Map<String, dynamic>> reciepeList = [];
+  List<Map<String, dynamic>> recentList = [];
 
   Future<void> fetchRecipie() async {
   try {
@@ -58,10 +59,23 @@ class _UserDashboardState extends State<UserDashboard> {
     }
   }
 
+  Future<void> fetchRecent() async {
+    try {
+      final response = await supabase.from('tbl_recent').select("*,tbl_recipe(*)").eq('user_id', supabase.auth.currentUser!.id).order('updated_at', ascending: false);
+      setState(() {
+        recentList=response;
+      });
+    } catch (e) {
+      print("Error: $e");
+      
+    } 
+  }
+
   @override
   void initState() {
     fetchRecipie();
     fetchUser();
+    fetchRecent();
     super.initState();
   }
 
@@ -168,7 +182,7 @@ class _UserDashboardState extends State<UserDashboard> {
               
               return GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfile(uid: data['user_id'],),));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfilePage(userId: data['user_id'],),));
                 },
                 child: Container(
                   width: 60,
@@ -187,31 +201,38 @@ class _UserDashboardState extends State<UserDashboard> {
             },
           ),
         ),
-        // const SizedBox(height: 20),
+        const SizedBox(height: 20),
 
-        // // Recently Viewed Recipes
-        // const Text(
-        //   "Recently Viewed Recipes",
-        //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        // ),
-        // const SizedBox(height: 10),
-        // SizedBox(
-        //   height: 120,
-        //   child: ListView.builder(
-        //     scrollDirection: Axis.horizontal,
-        //     itemCount: 3,
-        //     itemBuilder: (context, index) {
-        //       return Container(
-        //         width: 140,
-        //         margin: const EdgeInsets.only(right: 10),
-        //         decoration: BoxDecoration(
-        //           borderRadius: BorderRadius.circular(10),
-        //           color: Colors.pink[200], // Placeholder color
-        //         ),
-        //       );
-        //     },
-        //   ),
-        // ),
+        // Recently Viewed Recipes
+        const Text(
+          "Recently Viewed Recipes",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 120,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: recentList.length,
+            itemBuilder: (context, index) {
+              final data = recentList[index]['tbl_recipe'];
+              return GestureDetector(
+                 onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => RecipePage(recipeId: data['id'].toString(),isEditable: false,),));
+              },
+                child: Container(
+                  width: 140,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    image: DecorationImage(image: NetworkImage(data['recipe_photo']),fit: BoxFit.cover),
+                    color: Colors.pink[200], // Placeholder color
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }

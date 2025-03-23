@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:user_recipeapp/main.dart';
-import 'package:user_recipeapp/screens/editprofile.dart';
-import 'package:user_recipeapp/screens/viewrecipe.dart';
+import 'package:user_recipeapp/screens/followers_page.dart';
+import 'package:user_recipeapp/screens/following_page.dart';
+import 'package:user_recipeapp/screens/recipepage.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -15,6 +16,11 @@ class _ProfileState extends State<Profile> {
   List<Map<String, dynamic>> recipeList = [];
   String name = '';
   String image = '';
+
+  // Colors matching RecipeSearchAndSuggestionPage
+  final Color primaryColor = const Color(0xFF1F7D53);
+  final Color secondaryColor = const Color(0xFF2C3E50);
+  final Color accentColor = const Color(0xFFE67E22);
 
   Future<void> fetchUser() async {
     try {
@@ -36,10 +42,18 @@ class _ProfileState extends State<Profile> {
     try {
       final response = await supabase
           .from("tbl_recipe")
-          .select()
-          .eq('user_id', supabase.auth.currentUser!.id).eq('recipe_status', 1);
+          .select('''
+            id,
+            recipe_name,
+            recipe_photo,
+            recipe_calorie,
+            recipe_cookingtime,
+            recipe_status
+          ''')
+          .eq('user_id', supabase.auth.currentUser!.id)
+          .eq('recipe_status', 1);
       setState(() {
-        recipeList = response;
+        recipeList = List<Map<String, dynamic>>.from(response);
       });
     } catch (e) {
       print("Error fetching recipe: $e");
@@ -49,25 +63,22 @@ class _ProfileState extends State<Profile> {
   int followerCount = 0;
   int followingCount = 0;
 
-  followFollowingCount() async {
+  Future<void> followFollowingCount() async {
     try {
       final following = await supabase
           .from('tbl_follow')
           .count()
           .eq('following_id', supabase.auth.currentUser!.id);
-          print(following);
       final followers = await supabase
           .from('tbl_follow')
           .count()
           .eq('follower_id', supabase.auth.currentUser!.id);
-          print(followers);
       setState(() {
         followerCount = followers;
         followingCount = following;
       });
     } catch (e) {
-      print("Error fetching recipe: $e");
-      
+      print("Error fetching follow counts: $e");
     }
   }
 
@@ -81,212 +92,227 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-    return
-     Column(
-      children: [
-        const SizedBox(height: 20),
-     
-        // Profile Picture
-        CircleAvatar(
-          radius: 50,
-          backgroundColor: Colors.grey,
-          backgroundImage: NetworkImage(image),
-          child: image == ""
-              ? Icon(Icons.person, size: 50, color: Colors.white)
-              : null,
-        ),
-
-        const SizedBox(height: 10),
-
-        // User Name
-        Text(
-          name,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-
-        const SizedBox(height: 5),
-
-        // Edit Profile Button
-        TextButton(
-          onPressed: () {
-            Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditProfile()
-                    ),
-                  );
-          },
-          child: const Text('Edit Profile'),
-        ),
-
-        const SizedBox(height: 10),
-
-        // Stats Row (Posts, Followers, Following)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Column(
-              children: [
-                Text(recipeList.length.toString(),
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('Posts'),
-              ],
-            ),
-            Column(
-              children:  [
-                Text(followerCount.toString(),
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('Followers'),
-              ],
-            ),
-            Column(
-              children:  [
-                Text(followingCount.toString(),
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('Following'),
-              ],
-            ),
-          ],
-        ),
-
-       
-        const SizedBox(height: 50),
-
-        // Grid for Posts
-        GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          padding: const EdgeInsets.all(5),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            childAspectRatio: 0.75,
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          // Profile Picture
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.grey,
+            backgroundImage: image.isNotEmpty ? NetworkImage(image) : null,
+            child: image.isEmpty
+                ? const Icon(Icons.person, size: 50, color: Colors.white)
+                : null,
           ),
-          itemCount: recipeList.length,
-          itemBuilder: (context, index) {
-            final data = recipeList[index];
 
-            return GestureDetector(
+          const SizedBox(height: 10),
+
+          // User Name
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: secondaryColor,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // Stats Row (Posts, Followers, Following)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    recipeList.length.toString(),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: secondaryColor,
+                    ),
+                  ),
+                  const Text('Posts'),
+                ],
+              ),
+              GestureDetector(
                 onTap: () {
-                  Navigator.push(
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingPage(),));
+                },
+                child: Column(
+                  children: [
+                    Text(
+                      followerCount.toString(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: secondaryColor,
+                      ),
+                    ),
+                    const Text('Followers'),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => FollowersPage(),));
+                },
+                child: Column(
+                  children: [
+                    Text(
+                      followingCount.toString(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: secondaryColor,
+                      ),
+                    ),
+                    const Text('Following'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Grid for Posts
+          GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.65,
+            ),
+            itemCount: recipeList.length,
+            itemBuilder: (context, index) {
+              final recipe = recipeList[index];
+              return GestureDetector(
+                onTap: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ViewRecipe(recipeId: data['id']),
+                      builder: (context) => RecipePage(
+                        recipeId: recipe['id'].toString(),
+                      ),
                     ),
                   );
+                  if (result == true) {
+                    fetchRecipe();
+                  }
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 255, 255),
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.15),
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Stack(
                         children: [
-                          // Recipe Image
-                          SizedBox(
-                            height: 195,
-                            width: double.infinity,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.network(
-                                data['recipe_photo']?.toString() ?? '',
-                                fit: BoxFit.cover,
-                              ),
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
                             ),
-                          ),
-
-                          // Three-dot menu (Top-Right)
-                          const Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Icon(Icons.more_vert,
-                                color: Color.fromARGB(255, 0, 0, 0)),
-                          ),
-
-                          // Cooking Time (Bottom-Left)
-                          Positioned(
-                            bottom: 8,
-                            left: 8,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.black
-                                    .withOpacity(0.6), // Semi-transparent black
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.access_time,
-                                      color: Colors.white, size: 16),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    data['recipe_cookingtime']?.toString() ??
-                                        'N/A',
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 12),
+                            child: recipe['recipe_photo'] != null &&
+                                    recipe['recipe_photo'].isNotEmpty
+                                ? Image.network(
+                                    recipe['recipe_photo'],
+                                    height: 130,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    height: 130,
+                                    color: Colors.grey[200],
+                                    child: const Icon(
+                                      Icons.image,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ),
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 10),
-
-                      // Small section at the bottom for rating
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 4, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(
-                              255, 255, 255, 255), // Light background color
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Text(
+                              recipe['recipe_name'] ?? 'Unnamed',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
                             Row(
-                              children: const [
-                                Icon(Icons.star, color: Colors.amber, size: 18),
-                                SizedBox(width: 4),
-                                Text("4.5",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
+                              children: [
+                                Icon(
+                                  Icons.local_fire_department,
+                                  size: 14,
+                                  color: accentColor,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${recipe['recipe_calorie'] ?? 'N/A'} cal',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.timer_outlined,
+                                      size: 14,
+                                      color: accentColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      recipe['recipe_cookingtime'] ?? 'N/A',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ],
                         ),
                       ),
-                      Container(
-                        width: double.infinity,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(
-                            data['recipe_name']?.toString() ?? 'Unknown Recipe',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.left,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
-                ));
-          },
-        ),
-      ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

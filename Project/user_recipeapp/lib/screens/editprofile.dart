@@ -30,17 +30,17 @@ class _EditProfileState extends State<EditProfile> {
       _userId = user.id;
 
       final response = await supabase
-          .from('profiles')
+          .from('tbl_user')
           .select()
-          .eq('id', _userId!)
+          .eq('user_id', _userId!)
           .maybeSingle(); // Prevents errors if no user data is found
 
       if (response != null) {
         setState(() {
-          _nameController.text = response['name'] ?? '';
-          _emailController.text = response['email'] ?? '';
-          _contactController.text = response['contact'] ?? '';
-          _imageUrl = response['profile_image'];
+          _nameController.text = response['user_name'] ?? '';
+          _emailController.text = response['user_email'] ?? '';
+          _contactController.text = response['user_contact'] ?? '';
+          _imageUrl = response['user_photo'];
         });
       }
     }
@@ -60,15 +60,15 @@ class _EditProfileState extends State<EditProfile> {
   Future<void> _saveProfile() async {
     if (_userId == null) return;
 
-    await supabase.from('profiles').upsert({
+    await supabase.from('tbl_user').upsert({
       'id': _userId,
-      'name': _nameController.text,
-      'email': _emailController.text,
-      'contact': _contactController.text,
-      'profile_image': _imageUrl,
+      'user_name': _nameController.text,
+      'user_email': _emailController.text,
+      'user_contact': _contactController.text,
+      'user_photo': _imageUrl,
     });
 
-    Navigator.pop(context); // Go back after saving
+    Navigator.pop(context, true); // Go back after saving
   }
 
   @override

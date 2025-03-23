@@ -19,6 +19,7 @@ class _FavortiesState extends State<Favorties> {
           .from('tbl_favorite')
           .select("*, tbl_recipe(*)")
           .eq('user_id', uid);
+          print(response);
       setState(() {
         favorites = response;
       });
@@ -26,12 +27,10 @@ class _FavortiesState extends State<Favorties> {
       print("Error fetching favorite recipes: $e");
     }
   }
- Future<void> deleteFavorites(int id) async {
+
+  Future<void> deleteFavorites(int id) async {
     try {
-      await supabase
-          .from('tbl_favorite')
-          .delete()
-          .eq('id', id);
+      await supabase.from('tbl_favorite').delete().eq('id', id);
       fetchFavorite(); // Refresh list after deletion
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -52,57 +51,63 @@ class _FavortiesState extends State<Favorties> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-    
-      shrinkWrap: true,
-      itemCount: favorites.length, // Placeholder for now
-      itemBuilder: (context, index) {
-        final recipe = favorites[index]['tbl_recipe'] ?? {};
-        int id = favorites[index]['id'];
-        return Card(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.circular(15)), // Optional rounded corners
-          child: SizedBox(
-            width: double.infinity, // Makes it expand fully in width
-            height: 80, // Set desired height
-            child: ListTile(
-              leading: ClipOval(
-                child: Image.network(
-                  recipe['recipe_photo'],
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.image, size: 50),
-                ),
-              ),
-              title: Text(recipe['recipe_name'] ?? "No Name"),
-              subtitle:
-                  Text(recipe['recipe_details'] ?? "No Details Available"),
-              trailing: IconButton(
-                icon: const Icon(
-                  Icons.favorite,
-                  color: Color(0xFF1F7D53),
-                ),
-                onPressed: () {
-                  deleteFavorites(id);
-                },
-                // To be implemented
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ViewRecipe(recipeId: recipe['id']),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Favorites"),
+        backgroundColor: Colors.white,
+      ),
+      body: ListView.builder(
+        shrinkWrap: true,
+        itemCount: favorites.length, // Placeholder for now
+        itemBuilder: (context, index) {
+          final recipe = favorites[index]['tbl_recipe'] ?? {};
+          int id = favorites[index]['id'];
+          return Card(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(15)), // Optional rounded corners
+            child: SizedBox(
+              width: double.infinity, // Makes it expand fully in width
+              height: 80, // Set desired height
+              child: ListTile(
+                leading: ClipOval(
+                  child: Image.network(
+                    recipe['recipe_photo'],
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.image, size: 50),
                   ),
-                );
-              },
+                ),
+                title: Text(recipe['recipe_name'] ?? "No Name"),
+                subtitle:
+                    Text(recipe['recipe_details'] ?? "No Details Available"),
+                trailing: IconButton(
+                  icon: const Icon(
+                    Icons.favorite,
+                    color: Color(0xFF1F7D53),
+                  ),
+                  onPressed: () {
+                    deleteFavorites(id);
+                  },
+                  // To be implemented
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ViewRecipe(recipeId: recipe['id']),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:user_recipeapp/main.dart';
 import 'package:user_recipeapp/screens/addcomment.dart';
 import 'package:user_recipeapp/screens/homepage.dart';
@@ -28,9 +27,10 @@ class _RecipePageState extends State<RecipePage> {
     super.initState();
     fetchRecipeDetails();
     fetchComments();
+    recentView();
   }
 
-Future<void> insertFavorite() async {
+  Future<void> insertFavorite() async {
     try {
       print("recipe_id: ${widget.recipeId}");
       final response = await supabase
@@ -41,25 +41,21 @@ Future<void> insertFavorite() async {
               supabase.auth.currentUser!.id) // Use null-aware operator
           .maybeSingle();
       if (response != null) {
-        await supabase
-            .from('tbl_favorite')
-            .delete()
-            .eq('id', response['id']);
+        await supabase.from('tbl_favorite').delete().eq('id', response['id']);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Recipe removed from favorites!'),
           ),
         );
-      }
-      else{
-      await supabase.from('tbl_favorite').insert({
-        'recipe_id': widget.recipeId,
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Recipe added to favorites!'),
-        ),
-      );
+      } else {
+        await supabase.from('tbl_favorite').insert({
+          'recipe_id': widget.recipeId,
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Recipe added to favorites!'),
+          ),
+        );
       }
     } catch (e) {
       print("Error fav: $e");
@@ -68,6 +64,81 @@ Future<void> insertFavorite() async {
           content: Text('Error adding to favorites: $e'),
         ),
       );
+    }
+  }
+
+  Future<void> recentView() async {
+    try {
+      print("Recent updated");
+      await supabase.from('tbl_recent').upsert(
+        {
+          'recipe_id': widget.recipeId,
+          'user_id': supabase.auth.currentUser!.id,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        onConflict: 'recipe_id,user_id', // Specify the unique constraint
+      );
+      print("Recent view updated successfully");
+    } catch (e) {
+      print("Error adding/updating recent: $e");
+    }
+  }
+
+  Future<bool?> deleteConfirm() async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.delete, color: Colors.red, size: 24),
+            const SizedBox(width: 8),
+            const Text('Confirm Deletion'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to delete "${recipe?['recipe_name']}"? This action cannot be undone.',
+          style: const TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false), // Cancel
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true), // Confirm
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Example method to delete a recipe (to be called from RecipePage or elsewhere)
+  Future<void> _deleteRecipe() async {
+    bool? confirm = await deleteConfirm();
+    if (confirm == true) {
+      try {
+        await supabase.from("tbl_comment").delete().eq('recipe_id', widget.recipeId);
+        await supabase.from("tbl_favorite").delete().eq('recipe_id', widget.recipeId);
+        await supabase.from("tbl_recent").delete().eq('recipe_id', widget.recipeId);
+        await supabase.from("tbl_ingredient").delete().eq('reciepe_id', widget.recipeId);
+        await supabase.from("tbl_instructions").delete().eq('recipe_id', widget.recipeId);
+
+        await supabase.from('tbl_recipe').delete().eq('id', widget.recipeId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Recipe deleted successfully')),
+        );
+        Navigator.pop(context, true); // Go back to previous screen
+      } catch (e) {
+        print('Error deleting recipe: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete recipe')),
+        );
+      }
     }
   }
 
@@ -89,7 +160,6 @@ Future<void> insertFavorite() async {
       print("Error checking favorite: $e");
     }
   }
-
 
   Future<void> fetchRecipeDetails() async {
     try {
@@ -151,23 +221,23 @@ Future<void> insertFavorite() async {
     }
   }
 
-  void _shareRecipe(Map<String, dynamic> recipe) {
-    final String shareText = '''
-Recipe: ${recipe['recipe_name'] ?? 'Unnamed Recipe'}
-Calories: ${recipe['recipe_calorie'] ?? 'N/A'}
-Cooking Time: ${recipe['recipe_cookingtime'] ?? 'N/A'}
-Type: ${recipe['recipie_type'] ?? 'N/A'}
-Cuisine: ${recipe['tbl_cuisine']?['cuisine_name'] ?? 'N/A'}
-Category: ${recipe['tbl_category']?['category_name'] ?? 'N/A'}
-Level: ${recipe['tbl_level']?['level_name'] ?? 'N/A'}
-Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
-''';
+//   void _shareRecipe(Map<String, dynamic> recipe) {
+//     final String shareText = '''
+// Recipe: ${recipe['recipe_name'] ?? 'Unnamed Recipe'}
+// Calories: ${recipe['recipe_calorie'] ?? 'N/A'}
+// Cooking Time: ${recipe['recipe_cookingtime'] ?? 'N/A'}
+// Type: ${recipe['recipie_type'] ?? 'N/A'}
+// Cuisine: ${recipe['tbl_cuisine']?['cuisine_name'] ?? 'N/A'}
+// Category: ${recipe['tbl_category']?['category_name'] ?? 'N/A'}
+// Level: ${recipe['tbl_level']?['level_name'] ?? 'N/A'}
+// Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
+// ''';
 
-    Share.share(
-      shareText,
-      subject: 'Check out this recipe!',
-    );
-  }
+//     Share.share(
+//       shareText,
+//       subject: 'Check out this recipe!',
+//     );
+//   }
 
   // Widget to display star rating
   Widget buildRatingStars(double rating) {
@@ -210,19 +280,12 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
         ),
         backgroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: isFavorite ? Colors.red : Colors.black,
-            ),
-            onPressed: insertFavorite,
-          ),
           widget.isEditable
               ? PopupMenuButton<String>(
                   color: Colors.white,
                   onSelected: (value) {
                     if (value == "Delete") {
-                      // Handle delete action
+                      _deleteRecipe();
                     }
                   },
                   itemBuilder: (BuildContext context) {
@@ -327,9 +390,7 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                     child: Text(
                       recipe?['recipe_name'] ?? 'Unknown Recipe',
                       style: const TextStyle(
-                        fontSize: 22, 
-                        fontWeight: FontWeight.bold
-                      ),
+                          fontSize: 22, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -351,14 +412,16 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F7D53).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.timer, color: Color(0xFF1F7D53), size: 18),
+                      const Icon(Icons.timer,
+                          color: Color(0xFF1F7D53), size: 18),
                       const SizedBox(width: 4),
                       Text(
                         "${recipe?['recipe_cookingtime'] ?? 'N/A'}",
@@ -372,14 +435,16 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F7D53).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.star, color: Color(0xFF1F7D53), size: 18),
+                      const Icon(Icons.star,
+                          color: Color(0xFF1F7D53), size: 18),
                       const SizedBox(width: 4),
                       Text(
                         averageRating.toStringAsFixed(1),
@@ -408,7 +473,8 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                   children: [
                     const Text("Serving Size: "),
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, color: Color(0xFF1F7D53)),
+                      icon: const Icon(Icons.remove_circle_outline,
+                          color: Color(0xFF1F7D53)),
                       onPressed: servingSize > 1
                           ? () {
                               setState(() {
@@ -418,7 +484,8 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                           : null,
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         border: Border.all(color: const Color(0xFF1F7D53)),
                         borderRadius: BorderRadius.circular(4),
@@ -429,7 +496,8 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add_circle_outline, color: Color(0xFF1F7D53)),
+                      icon: const Icon(Icons.add_circle_outline,
+                          color: Color(0xFF1F7D53)),
                       onPressed: () {
                         setState(() {
                           servingSize++;
@@ -486,9 +554,7 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                       child: Text(
                         "INSTRUCTIONS",
                         style: TextStyle(
-                          color: Colors.white, 
-                          fontWeight: FontWeight.bold
-                        ),
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -547,10 +613,8 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                   children: [
                     const Text(
                       "Reviews",
-                      style: TextStyle(
-                        fontSize: 18, 
-                        fontWeight: FontWeight.bold
-                      ),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     if (!widget.isEditable)
                       TextButton.icon(
@@ -573,7 +637,7 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                   ],
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Average Rating Display
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -619,9 +683,9 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Reviews List
                 comments.isEmpty
                     ? Center(
@@ -707,14 +771,12 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
 
   // Helper method to build rating distribution bars
   Widget _buildRatingBar(int rating, List<Map<String, dynamic>> comments) {
-    int count = comments.where((comment) => 
-      comment['comment_ratingvalue'] == rating
-    ).length;
-    
-    double percentage = comments.isNotEmpty 
-      ? count / comments.length 
-      : 0.0;
-    
+    int count = comments
+        .where((comment) => comment['comment_ratingvalue'] == rating)
+        .length;
+
+    double percentage = comments.isNotEmpty ? count / comments.length : 0.0;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
@@ -813,17 +875,17 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Comment content
-            if (comment['comment_content'] != null && 
+            if (comment['comment_content'] != null &&
                 comment['comment_content'].toString().isNotEmpty)
               Text(
                 comment['comment_content'],
                 style: const TextStyle(fontSize: 14),
               ),
-            
+
             // Comment photo (if any)
             if (comment['comment_photo'] != null)
               Padding(
@@ -851,12 +913,12 @@ Photo: ${recipe['recipe_photo'] ?? 'No photo available'}
   // Helper method to format date
   String _formatDate(String? dateString) {
     if (dateString == null) return 'Unknown date';
-    
+
     try {
       final date = DateTime.parse(dateString);
       final now = DateTime.now();
       final difference = now.difference(date);
-      
+
       if (difference.inDays > 365) {
         return '${(difference.inDays / 365).floor()} ${(difference.inDays / 365).floor() == 1 ? 'year' : 'years'} ago';
       } else if (difference.inDays > 30) {

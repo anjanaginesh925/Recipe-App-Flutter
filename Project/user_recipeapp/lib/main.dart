@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:user_recipeapp/screens/followers.dart';
 import 'package:user_recipeapp/screens/homepage.dart';
 import 'package:user_recipeapp/screens/login.dart';
 
@@ -20,7 +19,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Login(),
+      home: AuthWrapper(),
       
    );
   }
