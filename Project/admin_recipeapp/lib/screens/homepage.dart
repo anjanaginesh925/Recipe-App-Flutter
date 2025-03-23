@@ -19,7 +19,6 @@ class _HomepageState extends State<Homepage> {
 
   final List<String> pageNames = [
     'Dashboard',
-    'Account',
     'Category',
     'Level',
     'Ingredient',
@@ -29,7 +28,6 @@ class _HomepageState extends State<Homepage> {
 
   final List<IconData> pageIcons = [
     Icons.dashboard,
-    Icons.supervised_user_circle,
     Icons.category,
     Icons.star,
     Icons.soup_kitchen,
@@ -39,23 +37,33 @@ class _HomepageState extends State<Homepage> {
 
   final List<Widget> pageContent = [
     Dashboard(),
-    Account(),
     CategoryPage(),
     LevelPage(),
     Ingredient(),
     Cuisine(),
-    Diet()
+    Diet(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(pageNames[selectedIndex], style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.deepPurple,
+        title: Text(
+          pageNames[selectedIndex],
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 24,
+          ),
+        ),
+        backgroundColor: const Color(0xFF2E7D32), // Deep green for AppBar
+        elevation: 5,
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: Icon(
+              Icons.logout,
+              color: Colors.white.withOpacity(0.9),
+            ),
             onPressed: () {
               // Handle logout
             },
@@ -64,7 +72,7 @@ class _HomepageState extends State<Homepage> {
       ),
       body: Row(
         children: [
-          // Sidebar
+          // Sidebar (NavigationRail, using NavigationRail
           NavigationRail(
             selectedIndex: selectedIndex,
             onDestinationSelected: (index) {
@@ -73,14 +81,25 @@ class _HomepageState extends State<Homepage> {
               });
             },
             labelType: NavigationRailLabelType.all,
-            backgroundColor: Colors.grey[900],
-            unselectedIconTheme: IconThemeData(color: Colors.white70),
-            selectedIconTheme: IconThemeData(color: Colors.deepPurpleAccent),
+            backgroundColor: const Color(0xFF1A3C34), // Dark green for sidebar
+            unselectedIconTheme:
+                IconThemeData(color: Colors.white.withOpacity(0.7)),
+            unselectedLabelTextStyle: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 14,
+            ),
+            selectedIconTheme: const IconThemeData(
+                color: Color(0xFFA5D6A7)), // Light green for selected icon
+            selectedLabelTextStyle: const TextStyle(
+              color: Color(0xFFA5D6A7), // Light green for selected label
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
             destinations: List.generate(pageNames.length, (index) {
               return NavigationRailDestination(
                 icon: Icon(pageIcons[index]),
-                selectedIcon: Icon(pageIcons[index], color: Colors.deepPurpleAccent),
-                label: Text(pageNames[index], style: TextStyle(color: Colors.white)),
+                selectedIcon: Icon(pageIcons[index]),
+                label: Text(pageNames[index]),
               );
             }),
           ),
@@ -89,8 +108,9 @@ class _HomepageState extends State<Homepage> {
           Expanded(
             flex: 5,
             child: Container(
-              color: Colors.grey[200],
-              padding: EdgeInsets.all(20),
+              color: const Color(
+                  0xFFF1F8E9), // Very light green background for content area
+              padding: const EdgeInsets.all(20),
               child: pageContent[selectedIndex],
             ),
           ),

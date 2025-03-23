@@ -9,7 +9,7 @@ class Dashboard extends StatefulWidget {
   State<Dashboard> createState() => _DashboardState();
 }
 
-class _DashboardState extends State<Dashboard> {
+class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMixin {
   bool isLoading = true;
   int totalRecipes = 0;
   int totalUsers = 0;
@@ -18,10 +18,29 @@ class _DashboardState extends State<Dashboard> {
   List<Map<String, dynamic>> recipesByCategory = [];
   Map<String, int> userGrowthData = {};
 
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
   @override
   void initState() {
     super.initState();
     fetchDashboardData();
+
+    // Initialize animation
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> fetchDashboardData() async {
@@ -31,31 +50,24 @@ class _DashboardState extends State<Dashboard> {
 
     try {
       // Fetch total recipes
-      final recipesResponse = await supabase
-          .from('tbl_recipe')
-          .count();
-      
+      final recipesResponse = await supabase.from('tbl_recipe').count();
+
       // Fetch total users
-      final usersResponse = await supabase
-          .from('tbl_user')
-          .count();
-          
-      
+      final usersResponse = await supabase.from('tbl_user').count();
+
       // Fetch top 3 users with most followers
-      // First, get all users
       final usersData = await supabase
           .from('tbl_user')
           .select('user_id, user_name, user_photo');
-      
-      // Then, count followers for each user
+
       final List<Map<String, dynamic>> usersWithFollowers = [];
-      
+
       for (var user in usersData) {
         final followersCount = await supabase
             .from('tbl_follow')
             .count()
             .eq('following_id', user['user_id']);
-        
+
         usersWithFollowers.add({
           'user_id': user['user_id'],
           'user_name': user['user_name'],
@@ -63,41 +75,38 @@ class _DashboardState extends State<Dashboard> {
           'follower_count': followersCount ?? 0,
         });
       }
-      
-      // Sort by follower count and take top 3
-      usersWithFollowers.sort((a, b) => 
-        (b['follower_count'] as int).compareTo(a['follower_count'] as int));
-      
+
+      usersWithFollowers.sort((a, b) =>
+          (b['follower_count'] as int).compareTo(a['follower_count'] as int));
+
       final topUsersData = usersWithFollowers.take(3).toList();
-      
+
       // Fetch top 3 recipes based on average rating
-      // First, get all recipes with their details
       final recipesData = await supabase
           .from('tbl_recipe')
           .select('id, recipe_name, recipe_photo');
-      
-      // Then, calculate average rating for each recipe
+
       final List<Map<String, dynamic>> recipesWithRatings = [];
-      
+
       for (var recipe in recipesData) {
         final ratingsData = await supabase
             .from('tbl_comment')
             .select('comment_ratingvalue')
             .eq('recipe_id', recipe['id'])
             .not('comment_ratingvalue', 'is', null);
-        
+
         double totalRating = 0;
         int ratingCount = 0;
-        
+
         for (var rating in ratingsData) {
           if (rating['comment_ratingvalue'] != null) {
             totalRating += rating['comment_ratingvalue'];
             ratingCount++;
           }
         }
-        
+
         double avgRating = ratingCount > 0 ? totalRating / ratingCount : 0;
-        
+
         recipesWithRatings.add({
           'id': recipe['id'],
           'recipe_name': recipe['recipe_name'],
@@ -106,55 +115,53 @@ class _DashboardState extends State<Dashboard> {
           'rating_count': ratingCount,
         });
       }
-      
-      // Sort by average rating and take top 3
-      recipesWithRatings.sort((a, b) => 
-        (b['avg_rating'] as double).compareTo(a['avg_rating'] as double));
-      
+
+      recipesWithRatings.sort((a, b) =>
+          (b['avg_rating'] as double).compareTo(a['avg_rating'] as double));
+
       final topRecipesData = recipesWithRatings.take(3).toList();
-      
+
       // Fetch recipe count by category
       final categoriesData = await supabase
           .from('tbl_category')
           .select('id, category_name');
-      
+
       final List<Map<String, dynamic>> categoryWithCounts = [];
-      
+
       for (var category in categoriesData) {
         final recipeCount = await supabase
             .from('tbl_recipe')
             .count()
             .eq('category_id', category['id']);
-        
+
         categoryWithCounts.add({
           'category_id': category['id'],
           'category_name': category['category_name'],
           'count': recipeCount ?? 0,
         });
       }
-      
-      // Sort by count
-      categoryWithCounts.sort((a, b) => 
-        (b['count'] as int).compareTo(a['count'] as int));
-      
+
+      categoryWithCounts.sort((a, b) =>
+          (b['count'] as int).compareTo(a['count'] as int));
+
       // Calculate user growth data (monthly)
       final usersWithDates = await supabase
           .from('tbl_user')
           .select('created_at');
-      
+
       final Map<String, int> monthlyGrowth = {};
-      
+
       for (var user in usersWithDates) {
         final createdAt = DateTime.parse(user['created_at']);
         final monthKey = '${createdAt.year}-${createdAt.month.toString().padLeft(2, '0')}';
-        
+
         if (monthlyGrowth.containsKey(monthKey)) {
           monthlyGrowth[monthKey] = (monthlyGrowth[monthKey] ?? 0) + 1;
         } else {
           monthlyGrowth[monthKey] = 1;
         }
       }
-      
+
       setState(() {
         totalRecipes = recipesResponse ?? 0;
         totalUsers = usersResponse ?? 0;
@@ -177,7 +184,7 @@ class _DashboardState extends State<Dashboard> {
     if (isLoading) {
       return const Center(
         child: CircularProgressIndicator(
-          color: Colors.deepPurple,
+          color: Color(0xFF2E7D32), // Deep green for loading indicator
         ),
       );
     }
@@ -192,6 +199,7 @@ class _DashboardState extends State<Dashboard> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
+              color: Color(0xFF1A3C34), // Dark green for title
             ),
           ),
           const SizedBox(height: 8),
@@ -215,14 +223,14 @@ class _DashboardState extends State<Dashboard> {
               _buildStatCard(
                 'Total Recipes',
                 totalRecipes.toString(),
-                Icons.menu_book,
-                Colors.orange,
+                Icons.restaurant_menu,
+                const Color(0xFFA5D6A7), // Light green for recipes
               ),
               _buildStatCard(
                 'Total Users',
                 totalUsers.toString(),
                 Icons.people,
-                Colors.blue,
+                const Color(0xFF2E7D32), // Deep green for users
               ),
             ],
           ),
@@ -234,6 +242,7 @@ class _DashboardState extends State<Dashboard> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
+              color: Color(0xFF1A3C34),
             ),
           ),
           const SizedBox(height: 16),
@@ -263,6 +272,7 @@ class _DashboardState extends State<Dashboard> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
+              color: Color(0xFF1A3C34),
             ),
           ),
           const SizedBox(height: 16),
@@ -296,13 +306,13 @@ class _DashboardState extends State<Dashboard> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.grey.withOpacity(0.1),
                         spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
@@ -314,6 +324,7 @@ class _DashboardState extends State<Dashboard> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A3C34),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -340,13 +351,13 @@ class _DashboardState extends State<Dashboard> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.grey.withOpacity(0.1),
                         spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
@@ -358,6 +369,7 @@ class _DashboardState extends State<Dashboard> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A3C34),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -382,14 +394,14 @@ class _DashboardState extends State<Dashboard> {
                                         showTitles: true,
                                         getTitlesWidget: (value, meta) {
                                           final sortedKeys = userGrowthData.keys.toList()..sort();
-                                          if (value.toInt() >= 0 && 
+                                          if (value.toInt() >= 0 &&
                                               value.toInt() < sortedKeys.length) {
                                             final monthYear = sortedKeys[value.toInt()].split('-');
                                             final month = int.parse(monthYear[1]);
                                             final monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                             return Text(
                                               monthNames[month],
-                                              style: const TextStyle(fontSize: 10),
+                                              style: const TextStyle(fontSize: 10, color: Color(0xFF1A3C34)),
                                             );
                                           }
                                           return const Text('');
@@ -402,13 +414,13 @@ class _DashboardState extends State<Dashboard> {
                                     LineChartBarData(
                                       spots: _createLineChartSpots(),
                                       isCurved: true,
-                                      color: Colors.deepPurple,
+                                      color: const Color(0xFF2E7D32), // Deep green for line chart
                                       barWidth: 3,
                                       isStrokeCapRound: true,
                                       dotData: FlDotData(show: true),
                                       belowBarData: BarAreaData(
                                         show: true,
-                                        color: Colors.deepPurple.withOpacity(0.2),
+                                        color: const Color(0xFF2E7D32).withOpacity(0.2),
                                       ),
                                     ),
                                   ],
@@ -428,54 +440,90 @@ class _DashboardState extends State<Dashboard> {
 
   // Helper method to build stat cards
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Container(
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white.withOpacity(0.9), // Glassmorphism effect
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  spreadRadius: 2,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              gradient: LinearGradient(
+                colors: [
+                  color.withOpacity(0.1),
+                  color.withOpacity(0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 30,
+            child: Row(
+              children: [
+                // Icon with background
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Text content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1A3C34), // Dark green for text
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        value,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2E7D32), // Deep green for value
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -487,13 +535,13 @@ class _DashboardState extends State<Dashboard> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -538,6 +586,7 @@ class _DashboardState extends State<Dashboard> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
+                    color: Color(0xFF1A3C34),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -565,13 +614,13 @@ class _DashboardState extends State<Dashboard> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -631,6 +680,7 @@ class _DashboardState extends State<Dashboard> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    color: Color(0xFF1A3C34),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -642,12 +692,12 @@ class _DashboardState extends State<Dashboard> {
                     Row(
                       children: List.generate(5, (index) {
                         return Icon(
-                          index < rating.floor() 
-                              ? Icons.star 
-                              : (index < rating) 
-                                  ? Icons.star_half 
+                          index < rating.floor()
+                              ? Icons.star
+                              : (index < rating)
+                                  ? Icons.star_half
                                   : Icons.star_border,
-                          color: Colors.amber,
+                          color: const Color(0xFFFFCA28), // Amber for stars
                           size: 16,
                         );
                       }),
@@ -698,11 +748,11 @@ class _DashboardState extends State<Dashboard> {
   Color _getRankColor(int rank) {
     switch (rank) {
       case 1:
-        return Colors.amber; // Gold
+        return const Color(0xFFFFCA28); // Gold
       case 2:
-        return Colors.blueGrey; // Silver
+        return const Color(0xFF90A4AE); // Silver
       case 3:
-        return Colors.brown; // Bronze
+        return const Color(0xFF8D6E63); // Bronze
       default:
         return Colors.grey;
     }
@@ -711,21 +761,18 @@ class _DashboardState extends State<Dashboard> {
   // Helper method to create pie chart sections
   List<PieChartSectionData> _createPieChartSections() {
     final List<Color> colors = [
-      Colors.red,
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.teal,
-      Colors.pink,
-      Colors.indigo,
+      const Color(0xFF2E7D32), // Deep green
+      const Color(0xFFA5D6A7), // Light green
+      const Color(0xFF66BB6A), // Medium green
+      const Color(0xFF1A3C34), // Dark green
+      const Color(0xFF81C784), // Another green shade
     ];
 
     return recipesByCategory.asMap().entries.map((entry) {
       final index = entry.key;
       final data = entry.value;
       final color = colors[index % colors.length];
-      
+
       // Skip categories with zero recipes
       if (data['count'] == 0) {
         return PieChartSectionData(
@@ -735,7 +782,7 @@ class _DashboardState extends State<Dashboard> {
           radius: 0,
         );
       }
-      
+
       return PieChartSectionData(
         color: color,
         value: (data['count'] ?? 0).toDouble(),

@@ -13,11 +13,11 @@ class ChangePasswordPage extends StatefulWidget {
 class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
-  
+
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  
+
   bool _obscureOldPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
@@ -32,63 +32,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   Future<void> _changePassword() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       isLoading = true;
     });
-    
-  //   try {
-  //     // First, verify the old password by attempting to sign in
-  //     final response = await supabase.auth.signInWithPassword(
-  //       email: supabase.auth.currentUser!.email!,
-  //       password: _oldPasswordController.text,
-  //     );
-      
-  //     if (response.user == null) {
-  //       throw Exception('Current password is incorrect');
-  //     }
-      
-  //     // If sign in was successful, update the password
-  //     await supabase.auth.updateUser(
-  //       UserAttributes(
-  //         password: _newPasswordController.text,
-  //       ),
-  //     );
-      
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Password changed successfully'),
-  //         backgroundColor: Colors.green,
-  //         behavior: SnackBarBehavior.floating,
-  //         shape: RoundedRectangleBorder(
-  //           borderRadius: BorderRadius.circular(10),
-  //         ),
-  //       ),
-  //     );
-      
-  //     Navigator.pop(context);
-  //   } catch (e) {
-  //     print('Error changing password: $e');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text(e.toString().contains('incorrect')
-  //             ? 'Current password is incorrect'
-  //             : 'Failed to change password'),
-  //         backgroundColor: Colors.red,
-  //         behavior: SnackBarBehavior.floating,
-  //         shape: RoundedRectangleBorder(
-  //           borderRadius: BorderRadius.circular(10),
-  //         ),
-  //       ),
-  //     );
-  //   } finally {
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //   }
-  // }
-  try {
-      // First, verify the old password by attempting to sign in
+
+    try {
       final response = await supabase.auth.signInWithPassword(
         email: supabase.auth.currentUser!.email!,
         password: _oldPasswordController.text,
@@ -98,69 +47,72 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         throw Exception('Current password is incorrect');
       }
 
-      // If sign in was successful, update the password
       await supabase.auth.updateUser(
-        UserAttributes(
-          password: _newPasswordController.text,
-        ),
+        UserAttributes(password: _newPasswordController.text),
       );
 
       await supabase.from('tbl_user').update({
         'user_password': _newPasswordController.text,
       }).eq('user_id', supabase.auth.currentUser!.id);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Password changed successfully'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Password changed successfully'),
+            backgroundColor: const Color(0xFF2E7D32), // Deep green
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-        ),
-      );
-
-      Navigator.pop(context);
+        );
+        Navigator.pop(context);
+      }
     } catch (e) {
       print('Error changing password: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().contains('incorrect')
-              ? 'Current password is incorrect'
-              : 'Failed to change password'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().contains('incorrect')
+                  ? 'Current password is incorrect'
+                  : 'Failed to change password',
+            ),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-        ),);
-}
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF5F7F5), // Very light green-gray
       appBar: AppBar(
-        backgroundColor: Colors.blue.shade400,
+        backgroundColor: const Color(0xFF2E7D32), // Deep green
         elevation: 0,
         title: Text(
           'Change Password',
           style: GoogleFonts.poppins(
             fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -168,63 +120,62 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               children: [
                 Center(
                   child: Container(
-                    width: 100,
-                    height: 100,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade400.withOpacity(0.1),
+                      color: const Color(0xFFA5D6A7).withOpacity(0.2), // Light green
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: Icon(
-                      Icons.lock,
-                      size: 50,
-                      color: Colors.blue.shade400,
+                    child: const Icon(
+                      Icons.lock_rounded,
+                      size: 60,
+                      color: Color(0xFF2E7D32), // Deep green
                     ),
                   ),
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 32),
                 Text(
-                  'Security',
+                  'Update Your Security',
                   style: GoogleFonts.poppins(
-                    fontSize: 18,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: const Color(0xFF1A3C34), // Dark green
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 8),
+                Text(
+                  'Keep your account secure with a new password',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 24),
                 _buildPasswordField(
                   'Current Password',
                   _oldPasswordController,
                   Icons.lock_outline,
                   _obscureOldPassword,
-                  () {
-                    setState(() {
-                      _obscureOldPassword = !_obscureOldPassword;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your current password';
-                    }
-                    return null;
-                  },
+                  () => setState(() => _obscureOldPassword = !_obscureOldPassword),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Please enter your current password' : null,
                 ),
                 _buildPasswordField(
                   'New Password',
                   _newPasswordController,
                   Icons.lock,
                   _obscureNewPassword,
-                  () {
-                    setState(() {
-                      _obscureNewPassword = !_obscureNewPassword;
-                    });
-                  },
+                  () => setState(() => _obscureNewPassword = !_obscureNewPassword),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a new password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
+                    if (value == null || value.isEmpty) return 'Please enter a new password';
+                    if (value.length < 6) return 'Password must be at least 6 characters';
                     return null;
                   },
                 ),
@@ -233,83 +184,75 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   _confirmPasswordController,
                   Icons.lock,
                   _obscureConfirmPassword,
-                  () {
-                    setState(() {
-                      _obscureConfirmPassword = !_obscureConfirmPassword;
-                    });
-                  },
+                  () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please confirm your new password';
-                    }
-                    if (value != _newPasswordController.text) {
-                      return 'Passwords do not match';
-                    }
+                    if (value == null || value.isEmpty) return 'Please confirm your new password';
+                    if (value != _newPasswordController.text) return 'Passwords do not match';
                     return null;
                   },
                 ),
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 56,
                   child: ElevatedButton(
                     onPressed: isLoading ? null : _changePassword,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade400,
+                      backgroundColor: const Color(0xFF2E7D32), // Deep green
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 2,
+                      shadowColor: Colors.black.withOpacity(0.2),
                     ),
                     child: isLoading
-                        ? SizedBox(
-                            height: 20,
-                            width: 20,
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
                             child: CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2,
                             ),
                           )
                         : Text(
-                            'Change Password',
+                            'Update Password',
                             style: GoogleFonts.poppins(
                               fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Container(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
+                    color: const Color(0xFFA5D6A7).withOpacity(0.3), // Light green
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue.shade200),
+                    border: Border.all(color: const Color(0xFFA5D6A7)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.info_outline, color: Colors.blue),
-                          SizedBox(width: 8),
+                          const Icon(Icons.info_outline, color: Color(0xFF1A3C34)),
+                          const SizedBox(width: 8),
                           Text(
                             'Password Tips',
                             style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade800,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A3C34), // Dark green
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
-                        '• Use at least 8 characters\n• Include uppercase and lowercase letters\n• Add numbers and special characters\n• Avoid using personal information',
+                        '• Use at least 8 characters\n• Include uppercase and lowercase letters\n• Add numbers and special characters\n• Avoid personal information',
                         style: GoogleFonts.poppins(
-                          color: Colors.blue.shade800,
+                          color: const Color(0xFF1A3C34),
                           height: 1.5,
+                          fontSize: 13,
                         ),
                       ),
                     ],
@@ -339,33 +282,33 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.poppins(
-            color: Colors.grey[600],
+            color: const Color(0xFF1A3C34).withOpacity(0.7), // Dark green
           ),
-          prefixIcon: Icon(icon, color: Colors.blue.shade400),
+          prefixIcon: Icon(icon, color: const Color(0xFF2E7D32)), // Deep green
           suffixIcon: IconButton(
             icon: Icon(
               obscureText ? Icons.visibility_off : Icons.visibility,
-              color: Colors.blue.shade400,
+              color: const Color(0xFF2E7D32), // Deep green
             ),
             onPressed: onToggle,
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+            borderSide: const BorderSide(color: Color(0xFFA5D6A7)), // Light green
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+            borderSide: const BorderSide(color: Color(0xFFA5D6A7)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.blue.shade400),
+            borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 2), // Deep green
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: EdgeInsets.symmetric(vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
         ),
-        style: GoogleFonts.poppins(),
+        style: GoogleFonts.poppins(color: const Color(0xFF1A3C34)),
         validator: validator,
       ),
     );

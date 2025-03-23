@@ -18,7 +18,7 @@ class _IngredientState extends State<Ingredient> {
     try {
       String name = _ingredientController.text.trim();
       await supabase.from('tbl_item').insert({'item_name': name});
-      showSnackbar("Ingredient Added Successfully!", Colors.green);
+      showSnackbar("Ingredient Added Successfully!", const Color(0xFF2E7D32));
       _ingredientController.clear();
       fetchIngredients();
     } catch (e) {
@@ -53,7 +53,7 @@ class _IngredientState extends State<Ingredient> {
       await supabase.from('tbl_item').update(
         {'item_name': _ingredientController.text.trim()},
       ).eq("id", editID);
-      showSnackbar("Ingredient Updated Successfully!", Colors.blueAccent);
+      showSnackbar("Ingredient Updated Successfully!", const Color(0xFF2E7D32));
       setState(() {
         editID = 0;
       });
@@ -67,9 +67,9 @@ class _IngredientState extends State<Ingredient> {
   void showSnackbar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: TextStyle(color: Colors.white)),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
         backgroundColor: color,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -82,19 +82,43 @@ class _IngredientState extends State<Ingredient> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16),
+    return Container(
+      color: const Color(0xFFF1F8E9), // Very light green background
+      padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Title
+          const Text(
+            'Manage Ingredients',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A3C34), // Dark green for title
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // Ingredient Input Form
-          Card(
-            elevation: 5,
-            color: Color(0xFFFBE799), // Beige background
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9), // Glassmorphism effect
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  spreadRadius: 2,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Form(
                 key: formKey,
                 child: Column(
@@ -102,7 +126,7 @@ class _IngredientState extends State<Ingredient> {
                     TextFormField(
                       controller: _ingredientController,
                       keyboardType: TextInputType.name,
-                      style: TextStyle(color: Colors.black),
+                      style: const TextStyle(color: Color(0xFF1A3C34)),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return "Please enter an ingredient name.";
@@ -114,19 +138,22 @@ class _IngredientState extends State<Ingredient> {
                       },
                       decoration: InputDecoration(
                         labelText: "Ingredient Name",
-                        labelStyle: TextStyle(color: Colors.black54),
+                        labelStyle: const TextStyle(color: Color(0xFF1A3C34)),
                         hintText: "Enter ingredient",
-                        hintStyle: TextStyle(color: Colors.grey),
+                        hintStyle: TextStyle(color: Colors.grey[500]),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Colors.white.withOpacity(0.5),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        prefixIcon: Icon(Icons.kitchen, color: Colors.amber),
+                        prefixIcon: const Icon(
+                          Icons.kitchen,
+                          color: Color(0xFF2E7D32), // Deep green icon
+                        ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
@@ -138,19 +165,19 @@ class _IngredientState extends State<Ingredient> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 245, 245, 245),
-                        minimumSize: Size(100, 50),
+                        backgroundColor: const Color(0xFF2E7D32), // Deep green button
+                        minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero, // Rectangular shape
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         elevation: 4,
                       ),
                       child: Text(
-                        editID == 0 ? "ADD INGREDIENT" : "UPDATE INGREDIENT",
-                        style: TextStyle(
-                          color: const Color.fromARGB(255, 126, 126, 126),
-                          fontSize: 14,
+                        editID == 0 ? "Add Ingredient" : "Update Ingredient",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -160,68 +187,92 @@ class _IngredientState extends State<Ingredient> {
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-          // Ingredient List (Shorter & Prettier Cards)
+          // Ingredient List
           Expanded(
-            child: ListView.builder(
-              itemCount: ingredientList.length,
-              itemBuilder: (context, index) {
-                final data = ingredientList[index];
-                return Container(
-                  margin: EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 5,
-                        offset: Offset(2, 3),
-                      ),
-                    ],
-                  ),
-                  child: ListTile(
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                    leading: CircleAvatar(
-                      backgroundColor: Color(0xFFFFD634), // Yellow
-                      child: Icon(Icons.emoji_food_beverage, color: Colors.black87),
-                    ),
-                    title: Text(
-                      data['item_name'],
+            child: ingredientList.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No ingredients available.',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+                        color: Color(0xFF1A3C34),
                       ),
                     ),
-                    trailing: Wrap(
-                      spacing: 8,
-                      children: [
-                        // Edit Button
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blueAccent),
-                          onPressed: () {
-                            setState(() {
-                              editID = data['id'];
-                              _ingredientController.text = data['item_name'];
-                            });
-                          },
+                  )
+                : ListView.builder(
+                    itemCount: ingredientList.length,
+                    itemBuilder: (context, index) {
+                      final data = ingredientList[index];
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9), // Glassmorphism effect
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              spreadRadius: 1,
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        // Delete Button
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            deleteIngredient(data['id'].toString());
-                          },
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 16),
+                          leading: CircleAvatar(
+                            backgroundColor: const Color(0xFFA5D6A7), // Light green
+                            child: const Icon(
+                              Icons.kitchen,
+                              color: Color(0xFF1A3C34), // Dark green icon
+                            ),
+                          ),
+                          title: Text(
+                            data['item_name'],
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF1A3C34),
+                            ),
+                          ),
+                          trailing: Wrap(
+                            spacing: 8,
+                            children: [
+                              // Edit Button
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Color(0xFF2E7D32), // Deep green
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    editID = data['id'];
+                                    _ingredientController.text = data['item_name'];
+                                  });
+                                },
+                              ),
+                              // Delete Button
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  deleteIngredient(data['id'].toString());
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

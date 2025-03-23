@@ -13,7 +13,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
-  void signin() {}
+  
   Future<void> signIn() async {
     try {
       String email = _emailController.text;
@@ -22,15 +22,14 @@ class _LoginState extends State<Login> {
         email: email,
         password: password,
       );
-       final User? user = res.user;
+      final User? user = res.user;
       if (user != null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Homepage() ),
+          MaterialPageRoute(builder: (context) => Homepage()),
         );
       }
       print('SignIn Successful');
-     
     } catch (e) {
       print('Error During SignIn: $e');
     }
@@ -39,118 +38,183 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Expanded(
-        child: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(image: AssetImage('assets/login-bg.jpg'), fit: BoxFit.cover)
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/login.jpg'),
+            fit: BoxFit.cover,
           ),
-          child: Center(
-            child: Container(
-              width: 400,
-              height: 500,
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 255, 255, 255),
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color.fromARGB(255, 48, 48, 48).withOpacity(0.7),
-                    spreadRadius: 3,
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
-                  ),
-                ],
+        ),
+        child: Center(
+          child: Container(
+            width: 400,
+            height: 500,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),  // Subtle white tint for glassmorphism
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.3),  // Thin white border with slight opacity
+                width: 0.5,  // Very thin border
               ),
-              child: ListView(
-                padding: EdgeInsets.all(50),
-                children: [
-                  TextFormField(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 2,
+                  blurRadius: 20,
+                  offset: Offset(0, 5),
+                ),
+              ],
+            ),
+            child: ListView(
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+              children: [
+                Text(
+                  "Welcome Back",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.3),
+                        offset: Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 40),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),  // Glassmorphism effect
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        spreadRadius: 1,
+                        blurRadius: 15,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: TextFormField(
                     controller: _emailController,
-                    style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0)),
+                    style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                       enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide(
-                            color: Colors.grey,
-                          )),
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
                       prefixIcon: Icon(
                         Icons.email_outlined,
-                        color: const Color.fromARGB(255, 202, 202, 202),
+                        color: Colors.white.withOpacity(0.7),
                       ),
                       hintText: "Enter Email Address",
-                      labelText: "Email Address",
-                      labelStyle:
-                          TextStyle(color: const Color.fromARGB(255, 0, 0, 0)),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide(
-                            color: Colors.grey,
-                          )),
                       hintStyle: TextStyle(
-                        color: const Color.fromARGB(255, 198, 198, 198),
+                        color: const Color.fromARGB(255, 37, 37, 37).withOpacity(0.5),
+                        fontSize: 16,
                       ),
-                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
-                  SizedBox(
-                    height: 30,
+                ),
+                SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),  // Glassmorphism effect
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        spreadRadius: 1,
+                        blurRadius: 15,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  
-                  TextFormField(
+                  child: TextFormField(
                     controller: _passController,
                     keyboardType: TextInputType.visiblePassword,
-                    style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0)),
+                    style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                       enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide(
-                            color: Colors.grey,
-                          )),
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
                       prefixIcon: Icon(
                         Icons.lock,
-                        color: const Color.fromARGB(255, 204, 204, 204),
+                        color: Colors.white.withOpacity(0.7),
                       ),
                       suffixIcon: Icon(
                         Icons.visibility,
-                        color: const Color.fromARGB(255, 204, 204, 204),
+                        color: Colors.white.withOpacity(0.7),
                       ),
-                      hintText: "Please Enter Password",
-                      labelText: "Password",
-                      labelStyle:
-                          TextStyle(color: const Color.fromARGB(255, 0, 0, 0)),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide(
-                            color: Colors.grey,
-                          )),
+                      hintText: "Enter Password",
                       hintStyle: TextStyle(
-                        color: const Color.fromARGB(255, 196, 196, 196),
+                        color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.5),
+                        fontSize: 16,
                       ),
-                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
-                  SizedBox(
-                    height: 30,
+                ),
+                SizedBox(height: 30),
+                Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 15,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  ElevatedButton(
+                  child: ElevatedButton(
                     onPressed: () {
                       signIn();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 255, 147, 64),
+                      backgroundColor: const Color.fromARGB(255, 49, 74, 48).withOpacity(0.9),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 18),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(15),
-                      child: Text(
-                        "LOGIN",
-                        style: const TextStyle(
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          fontSize: 15,
-                        ),
+                    child: Text(
+                      "LOGIN",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

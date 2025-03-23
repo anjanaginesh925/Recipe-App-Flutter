@@ -18,7 +18,7 @@ class _CategoryPageState extends State<CategoryPage> {
     try {
       String name = _nameController.text.trim();
       await supabase.from('tbl_category').insert({'category_name': name});
-      showSnackbar("Category Added Successfully!", Colors.green);
+      showSnackbar("Category Added Successfully!", const Color(0xFF2E7D32));
       _nameController.clear();
       fetchCategories();
     } catch (e) {
@@ -53,7 +53,7 @@ class _CategoryPageState extends State<CategoryPage> {
       await supabase.from('tbl_category').update(
         {'category_name': _nameController.text.trim()},
       ).eq("id", editID);
-      showSnackbar("Category Updated Successfully!", Colors.blueAccent);
+      showSnackbar("Category Updated Successfully!", const Color(0xFF2E7D32));
       setState(() {
         editID = 0;
       });
@@ -67,9 +67,9 @@ class _CategoryPageState extends State<CategoryPage> {
   void showSnackbar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: TextStyle(color: Colors.white)),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
         backgroundColor: color,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -82,19 +82,43 @@ class _CategoryPageState extends State<CategoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16),
+    return Container(
+      color: const Color(0xFFF1F8E9), // Very light green background
+      padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Title
+          const Text(
+            'Manage Categories',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A3C34), // Dark green for title
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // Category Input Form
-          Card(
-            elevation: 5,
-            color: Color(0xFFFBE799), // Beige background
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9), // Glassmorphism effect
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  spreadRadius: 2,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Form(
                 key: formKey,
                 child: Column(
@@ -102,7 +126,7 @@ class _CategoryPageState extends State<CategoryPage> {
                     TextFormField(
                       controller: _nameController,
                       keyboardType: TextInputType.name,
-                      style: TextStyle(color: Colors.black),
+                      style: const TextStyle(color: Color(0xFF1A3C34)),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return "Please enter a category name.";
@@ -114,19 +138,22 @@ class _CategoryPageState extends State<CategoryPage> {
                       },
                       decoration: InputDecoration(
                         labelText: "Category Name",
-                        labelStyle: TextStyle(color: Colors.black54),
+                        labelStyle: const TextStyle(color: Color(0xFF1A3C34)),
                         hintText: "Enter category",
-                        hintStyle: TextStyle(color: Colors.grey),
+                        hintStyle: TextStyle(color: Colors.grey[500]),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Colors.white.withOpacity(0.5),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        prefixIcon: Icon(Icons.category, color: Colors.amber),
+                        prefixIcon: const Icon(
+                          Icons.category,
+                          color: Color(0xFF2E7D32), // Deep green icon
+                        ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
@@ -138,19 +165,19 @@ class _CategoryPageState extends State<CategoryPage> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 245, 245, 245),
-                        minimumSize: Size(100, 50),
+                        backgroundColor: const Color(0xFF2E7D32), // Deep green button
+                        minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero, // Rectangular shape
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         elevation: 4,
                       ),
                       child: Text(
-                        editID == 0 ? "ADD CATEGORY" : "UPDATE CATEGORY",
-                        style: TextStyle(
-                          color: const Color.fromARGB(255, 126, 126, 126),
-                          fontSize: 14,
+                        editID == 0 ? "Add Category" : "Update Category",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -160,68 +187,92 @@ class _CategoryPageState extends State<CategoryPage> {
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-          // Category List (Shorter & Prettier Cards)
+          // Category List
           Expanded(
-            child: ListView.builder(
-              itemCount: categoryList.length,
-              itemBuilder: (context, index) {
-                final data = categoryList[index];
-                return Container(
-                  margin: EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 5,
-                        offset: Offset(2, 3),
-                      ),
-                    ],
-                  ),
-                  child: ListTile(
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                    leading: CircleAvatar(
-                      backgroundColor: Color(0xFFFFD634), // Yellow
-                      child: Icon(Icons.food_bank, color: Colors.black87),
-                    ),
-                    title: Text(
-                      data['category_name'],
+            child: categoryList.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No categories available.',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+                        color: Color(0xFF1A3C34),
                       ),
                     ),
-                    trailing: Wrap(
-                      spacing: 8,
-                      children: [
-                        // Edit Button
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blueAccent),
-                          onPressed: () {
-                            setState(() {
-                              editID = data['id'];
-                              _nameController.text = data['category_name'];
-                            });
-                          },
+                  )
+                : ListView.builder(
+                    itemCount: categoryList.length,
+                    itemBuilder: (context, index) {
+                      final data = categoryList[index];
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9), // Glassmorphism effect
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              spreadRadius: 1,
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        // Delete Button
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            deleteCategory(data['id'].toString());
-                          },
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 16),
+                          leading: CircleAvatar(
+                            backgroundColor: const Color(0xFFA5D6A7), // Light green
+                            child: const Icon(
+                              Icons.category,
+                              color: Color(0xFF1A3C34), // Dark green icon
+                            ),
+                          ),
+                          title: Text(
+                            data['category_name'],
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF1A3C34),
+                            ),
+                          ),
+                          trailing: Wrap(
+                            spacing: 8,
+                            children: [
+                              // Edit Button
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Color(0xFF2E7D32), // Deep green
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    editID = data['id'];
+                                    _nameController.text = data['category_name'];
+                                  });
+                                },
+                              ),
+                              // Delete Button
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  deleteCategory(data['id'].toString());
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

@@ -18,12 +18,12 @@ class _DietState extends State<Diet> {
     try {
       String name = _nameController.text.trim();
       await supabase.from('tbl_diet').insert({'diet_name': name});
-      showSnackbar("Diet Added Successfully!", Colors.green);
+      showSnackbar("Diet Added Successfully!", const Color(0xFF2E7D32));
       _nameController.clear();
       fetchCuisine();
     } catch (e) {
       showSnackbar("Failed to add Diet. Try again!", Colors.red);
-      print("ERROR ADDING CUISINE: $e");
+      print("ERROR ADDING DIET: $e");
     }
   }
 
@@ -53,7 +53,7 @@ class _DietState extends State<Diet> {
       await supabase.from('tbl_diet').update(
         {'diet_name': _nameController.text.trim()},
       ).eq("id", editID);
-      showSnackbar("Diet Updated Successfully!", Colors.blueAccent);
+      showSnackbar("Diet Updated Successfully!", const Color(0xFF2E7D32));
       setState(() {
         editID = 0;
       });
@@ -67,9 +67,9 @@ class _DietState extends State<Diet> {
   void showSnackbar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: TextStyle(color: Colors.white)),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
         backgroundColor: color,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -82,18 +82,43 @@ class _DietState extends State<Diet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16),
+    return Container(
+      color: const Color(0xFFF1F8E9), // Very light green background
+      padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cuisine Input Form
-          Card(
-            elevation: 5,
-            color: Color(0xFFFBE799), // Good Beige
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          // Title
+          const Text(
+            'Manage Diets',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A3C34), // Dark green for title
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Diet Input Form
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9), // Glassmorphism effect
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  spreadRadius: 2,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Form(
                 key: formKey,
                 child: Column(
@@ -101,7 +126,7 @@ class _DietState extends State<Diet> {
                     TextFormField(
                       controller: _nameController,
                       keyboardType: TextInputType.name,
-                      style: TextStyle(color: Colors.black),
+                      style: const TextStyle(color: Color(0xFF1A3C34)),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return "Please enter a Diet name.";
@@ -113,19 +138,22 @@ class _DietState extends State<Diet> {
                       },
                       decoration: InputDecoration(
                         labelText: "Diet Name",
-                        labelStyle: TextStyle(color: Colors.black54),
+                        labelStyle: const TextStyle(color: Color(0xFF1A3C34)),
                         hintText: "Enter Diet",
-                        hintStyle: TextStyle(color: Colors.grey),
+                        hintStyle: TextStyle(color: Colors.grey[500]),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Colors.white.withOpacity(0.5),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        prefixIcon: Icon(Icons.fastfood, color: Colors.amber),
+                        prefixIcon: const Icon(
+                          Icons.restaurant_menu,
+                          color: Color(0xFF2E7D32), // Deep green icon
+                        ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
@@ -137,19 +165,19 @@ class _DietState extends State<Diet> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 245, 245, 245), // Yellow
-                        minimumSize: Size(100, 50), // Full-width & taller button
+                        backgroundColor: const Color(0xFF2E7D32), // Deep green button
+                        minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero, // Rectangular shape
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         elevation: 4,
                       ),
                       child: Text(
-                        editID == 0 ? "Add Diet" : "UPDATE DIET",
-                        style: TextStyle(
-                          color: const Color.fromARGB(255, 126, 126, 126),
-                          fontSize: 14, // Bigger font
+                        editID == 0 ? "Add Diet" : "Update Diet",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -159,68 +187,92 @@ class _DietState extends State<Diet> {
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-          // Cuisine List (Shorter & Prettier Cards)
+          // Diet List
           Expanded(
-            child: ListView.builder(
-              itemCount: dietList.length,
-              itemBuilder: (context, index) {
-                final data = dietList[index];
-                return Container(
-                  margin: EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 5,
-                        offset: Offset(2, 3),
-                      ),
-                    ],
-                  ),
-                  child: ListTile(
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                    leading: CircleAvatar(
-                      backgroundColor: Color(0xFFFFD634), // Yellow
-                      child: Icon(Icons.restaurant_menu, color: Colors.black87),
-                    ),
-                    title: Text(
-                      data['diet_name'],
+            child: dietList.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No diets available.',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+                        color: Color(0xFF1A3C34),
                       ),
                     ),
-                    trailing: Wrap(
-                      spacing: 8,
-                      children: [
-                        // Edit Button
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blueAccent),
-                          onPressed: () {
-                            setState(() {
-                              editID = data['id'];
-                              _nameController.text = data['diet_name'];
-                            });
-                          },
+                  )
+                : ListView.builder(
+                    itemCount: dietList.length,
+                    itemBuilder: (context, index) {
+                      final data = dietList[index];
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9), // Glassmorphism effect
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              spreadRadius: 1,
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        // Delete Button
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            deleteDiet(data['id'].toString());
-                          },
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 16),
+                          leading: CircleAvatar(
+                            backgroundColor: const Color(0xFFA5D6A7), // Light green
+                            child: const Icon(
+                              Icons.restaurant_menu,
+                              color: Color(0xFF1A3C34), // Dark green icon
+                            ),
+                          ),
+                          title: Text(
+                            data['diet_name'],
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF1A3C34),
+                            ),
+                          ),
+                          trailing: Wrap(
+                            spacing: 8,
+                            children: [
+                              // Edit Button
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Color(0xFF2E7D32), // Deep green
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    editID = data['id'];
+                                    _nameController.text = data['diet_name'];
+                                  });
+                                },
+                              ),
+                              // Delete Button
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  deleteDiet(data['id'].toString());
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
