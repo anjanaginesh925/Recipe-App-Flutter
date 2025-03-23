@@ -1,5 +1,5 @@
-import 'package:admin_recipeapp/screens/account.dart';
 import 'package:admin_recipeapp/screens/category.dart';
+import 'package:admin_recipeapp/screens/complaints.dart';
 import 'package:admin_recipeapp/screens/cuisine.dart';
 import 'package:admin_recipeapp/screens/dashboard.dart';
 import 'package:admin_recipeapp/screens/diet.dart';
@@ -24,6 +24,7 @@ class _HomepageState extends State<Homepage> {
     'Ingredient',
     'Cuisine',
     'Diet',
+    'Complaints',
   ];
 
   final List<IconData> pageIcons = [
@@ -33,6 +34,7 @@ class _HomepageState extends State<Homepage> {
     Icons.soup_kitchen,
     Icons.restaurant,
     Icons.restaurant_menu,
+    Icons.report,
   ];
 
   final List<Widget> pageContent = [
@@ -42,6 +44,7 @@ class _HomepageState extends State<Homepage> {
     Ingredient(),
     Cuisine(),
     Diet(),
+    ComplaintsPage()
   ];
 
   @override

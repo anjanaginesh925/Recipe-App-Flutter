@@ -182,7 +182,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                       itemCount: complaints.length,
                       itemBuilder: (context, index) {
                         final complaint = complaints[index];
-                        final bool isReplied = complaint['complaint_status'] == '1';
+                        final bool isReplied = complaint['complaint_status'] == 1;
                         return GestureDetector(
                           onTap: () => _showReplyDialog(complaint['complaint_id']),
                           child: Card(
